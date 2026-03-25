@@ -1,0 +1,163 @@
+<view class="memory-container">
+  <!-- 续订提示条 -->
+  <view class="renewal-tip" wx:if="{{showRenewalTip}}">
+    <view class="renewal-tip-content">
+      <text class="renewal-tip-icon">🔔</text>
+      <view class="renewal-tip-text">
+        <text class="renewal-tip-title">纪念日提醒需要续订</text>
+        <text class="renewal-tip-desc">{{renewalReminders.length}}个即将到来的纪念日需要重新授权</text>
+      </view>
+    </view>
+    <view class="renewal-tip-actions">
+      <t-button size="small" theme="primary" bind:tap="onRenewAllSubscriptions">一键续订</t-button>
+      <t-button size="small" theme="default" variant="text" bind:tap="onCloseRenewalTip">稍后</t-button>
+    </view>
+  </view>
+
+  <!-- <view class="memory-header">
+    <text class="memory-title">纪念日备忘录</text>
+    <view class="header-actions">
+      <view class="sync-btn" bindtap="onManualSync" wx:if="{{syncStatus}}">
+        <text class="sync-icon">🔄</text>
+      </view>
+    </view>
+  </view> -->
+
+  <!-- Tab 导航 -->
+  <view class="tab-container">
+    <t-tabs value="{{activeTab}}" bind:change="onTabChange" space-evenly>
+      <t-tab-panel label="日历" value="calendar" />
+      <t-tab-panel label="即将到来" value="upcoming" />
+    </t-tabs>
+  </view>
+
+  <!-- 日历 Tab -->
+  <view class="tab-content" wx:if="{{activeTab === 'calendar'}}">
+    <!-- 日历视图 -->
+    <calendar-view
+      memories="{{memories}}"
+      showLunar="{{showLunar}}"
+      bind:select="onCalendarSelect"
+    />
+    
+    <!-- 农历显示开关 -->
+    <view class="lunar-toggle">
+      <text class="lunar-toggle-label">显示农历</text>
+      <switch checked="{{showLunar}}" bindchange="onToggleLunar" color="#0052D9" />
+    </view>
+
+    <t-pull-down-refresh
+      value="{{enable}}"
+      bind:refresh="onRefresh"
+      loadingTexts="{{['下拉刷新', '松手刷新', '正在刷新', '刷新完成']}}"
+    >
+      <scroll-view class="memory-scroll" scroll-y="true">
+        <view class="memory-list">
+        <view class="memory-empty" wx:if="{{memories.length === 0}}">
+          <text class="empty-text">暂无纪念日</text>
+          <text class="empty-desc">点击下方按钮添加第一个纪念日吧</text>
+          <t-button theme="primary" size="medium" icon="add" shape="round" bind:tap="goAddMemory" class="empty-add-btn">
+            立即添加
+          </t-button>
+        </view>
+
+        <view class="memory-item" wx:for="{{memories}}" wx:key="id">
+          <view class="memory-icon" style="background: {{item.color}}20; color: {{item.color}}">
+            <text class="type-icon">{{item.typeIcon}}</text>
+          </view>
+          <view class="memory-content">
+            <view class="memory-item-header">
+              <text class="memory-title-text">{{item.title}}</text>
+              <view class="memory-badge" style="background: {{item.color}}20; color: {{item.color}}">
+                <text>{{item.typeLabel}}</text>
+              </view>
+            </view>
+            <view class="memory-date">{{item.formattedDate}}</view>
+            <view class="memory-years" wx:if="{{item.years && item.years > 0}}">
+              第 <text style="color: #FF6B6B; font-weight: 600">{{item.years}}</text> 周年
+            </view>
+            <view class="memory-desc" wx:if="{{item.description}}">{{item.description}}</view>
+          
+          <!-- 底部操作区 -->
+          <view class="memory-footer">
+            <view class="memory-countdown">
+               <text class="countdown-text">{{item.countdownText}}</text>
+            </view>
+            <view class="card-footer" wx:if="{{!item.isSpecialDay}}">
+              <t-button size="small" variant="text" theme="default" catch:tap="onDeleteMemory" data-id="{{item.id}}" class="delete-btn">
+                删除
+              </t-button>
+              <t-button size="small" variant="text" theme="primary" catch:tap="onEditMemory" data-id="{{item.id}}" class="edit-btn">
+                编辑
+              </t-button>
+            </view>
+          </view>
+          </view>
+        </view>
+        </view>
+      </scroll-view>
+    </t-pull-down-refresh>
+  </view>
+
+  <!-- 即将到来 Tab -->
+  <view class="tab-content" wx:if="{{activeTab === 'upcoming'}}">
+    <t-pull-down-refresh
+      value="{{enable}}"
+      bind:refresh="onRefresh"
+      loadingTexts="{{['下拉刷新', '松手刷新', '正在刷新', '刷新完成']}}"
+    >
+      <scroll-view class="upcoming-scroll" scroll-y="true">
+        <view class="upcoming-list">
+          <view class="upcoming-empty" wx:if="{{upcomingMemories.length === 0}}">
+            <text class="empty-icon">📅</text>
+            <text class="empty-text">暂无即将到来的纪念日</text>
+            <t-button theme="primary" size="medium" icon="add" shape="round" bind:tap="goAddMemory" class="empty-add-btn">
+              添加纪念日
+            </t-button>
+          </view>
+
+          <view class="month-group" wx:for="{{groupedUpcoming}}" wx:key="month">
+            <view class="month-title">{{item.month}}</view>
+            <view class="upcoming-item {{memory.isSpecialDay ? 'special-day-item' : ''}}" wx:for="{{item.memories}}" wx:for-item="memory" wx:key="id">
+              <view class="upcoming-icon {{memory.isSpecialDay ? 'special-icon' : ''}}" style="background: {{memory.color}}20; color: {{memory.color}}">
+                <text class="type-icon">{{memory.typeIcon}}</text>
+              </view>
+              <view class="upcoming-content">
+                <view class="upcoming-header">
+                  <text class="upcoming-title {{memory.isSpecialDay ? 'special-title' : ''}}">{{memory.title}}</text>
+                  <view class="upcoming-badge {{memory.isSpecialDay ? 'special-badge' : ''}}" style="background: {{memory.color}}20; color: {{memory.color}}">
+                    <text>{{memory.typeLabel}}</text>
+                  </view>
+                </view>
+                <view class="upcoming-date">{{memory.formattedDate}}</view>
+                <view class="upcoming-years" wx:if="{{memory.years}}">
+                  第 <text style="color: #FF6B6B; font-weight: 600">{{memory.years}}</text> 周年
+                </view>
+                <view class="upcoming-note" wx:if="{{memory.description}}">{{memory.description}}</view>
+              </view>
+              <view class="upcoming-right">
+                <view class="upcoming-days {{memory.daysClass}} {{memory.isSpecialDay ? 'special-days' : ''}}">
+                  <text>{{memory.daysText}}</text>
+                </view>
+                <view class="card-footer" wx:if="{{!memory.isSpecialDay}}">
+                  <t-button size="small" variant="text" theme="default" catch:tap="onDeleteMemory" data-id="{{memory.memoryId || memory.id}}" class="delete-btn">
+                    删除
+                  </t-button>
+                  <t-button size="small" variant="text" theme="primary" catch:tap="onEditMemory" data-id="{{memory.memoryId || memory.id}}" class="edit-btn">
+                    编辑
+                  </t-button>
+                </view>
+              </view>
+            </view>
+          </view>
+        </view>
+      </scroll-view>
+    </t-pull-down-refresh>
+  </view>
+</view>
+
+<view class="memory-fab" bind:tap="goAddMemory">
+  <text class="fab-icon">+</text>
+</view>
+
+<t-message id="t-message" />

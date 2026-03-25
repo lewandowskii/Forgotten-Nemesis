@@ -1,0 +1,39 @@
+{
+  "pages": ["pages/login/login", "pages/home/index", "pages/add-memory/index", "pages/my/index", "pages/chat/index"],
+  "lazyCodeLoading": "requiredComponents",
+  "usingComponents": {
+    "t-toast": "tdesign-miniprogram/toast/toast"
+  },
+
+  "window": {
+    "backgroundTextStyle": "light",
+    "navigationBarBackgroundColor": "#fff",
+    "navigationBarTitleText": "备忘录",
+    "navigationBarTextStyle": "black"
+  },
+  "tabBar": {
+    "custom": true,
+    "list": [
+      {
+        "pagePath": "pages/home/index",
+        "text": "首页"
+      },
+      {
+        "pagePath": "pages/add-memory/index",
+        "text": "添加"
+      },
+      {
+        "pagePath": "pages/chat/index",
+        "text": "对话"
+      },
+      {
+        "pagePath": "pages/my/index",
+        "text": "我的"
+      }
+    ]
+  },
+  "resolveAlias": {
+    "~/*": "/*"
+  },
+  "sitemapLocation": "sitemap.json"
+}

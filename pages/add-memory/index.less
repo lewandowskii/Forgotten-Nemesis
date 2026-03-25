@@ -1,0 +1,402 @@
+.add-memory-container {
+  min-height: 100vh;
+  background-color: #f5f5f5;
+  padding-bottom: calc(112rpx + 120rpx + env(safe-area-inset-bottom));
+}
+
+.ai-section {
+  background: white;
+  margin: 20rpx;
+  padding: 32rpx;
+  border-radius: 16rpx;
+  box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+  position: relative;
+  transition: all 0.3s ease;
+  border: 2rpx solid transparent;
+}
+
+// AI 炫彩边框动画
+@keyframes aiGradientMove {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.ai-collapsed-border {
+  border: 2rpx solid transparent !important;
+  background-image: linear-gradient(white, white), 
+                    linear-gradient(270deg, #6B73FF, #000DFF, #FF6B6B, #6B73FF) !important;
+  background-origin: border-box !important;
+  background-clip: padding-box, border-box !important;
+  background-size: 100% 100%, 400% 400% !important;
+  animation: aiGradientMove 3s ease infinite !important;
+  box-shadow: 0 4rpx 20rpx rgba(107, 115, 255, 0.2) !important; // 给折叠状态加一个淡淡的紫色阴影
+}
+
+.ai-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ai-header-left {
+  display: flex;
+  align-items: center;
+}
+
+.ai-header-right {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.ai-collapsed-hint {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.ai-icon {
+  font-size: 36rpx;
+  margin-right: 12rpx;
+}
+
+.ai-title {
+  font-size: 32rpx;
+  font-weight: 600;
+  color: #333;
+  background: linear-gradient(135deg, #6B73FF 0%, #000DFF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.ai-content {
+  overflow: hidden;
+  max-height: 1000rpx;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 1;
+  margin-top: 24rpx;
+
+  &.collapsed {
+    max-height: 0;
+    opacity: 0;
+    margin-top: 0;
+  }
+}
+
+.ai-input-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 24rpx;
+}
+
+.ai-textarea-container {
+  position: relative;
+  width: 100%;
+}
+
+.ai-textarea {
+  background: #f8f8f8 !important;
+  border-radius: 12rpx;
+  padding: 24rpx !important;
+  padding-right: 72rpx !important;
+  font-size: 28rpx;
+}
+
+.ai-clear-btn {
+  position: absolute;
+  top: 24rpx;
+  right: 24rpx;
+  z-index: 10;
+  padding: 10rpx;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ai-btn {
+  align-self: flex-end;
+}
+
+.ai-try-section {
+  margin-top: 24rpx;
+  border-top: 1rpx solid #f0f0f0;
+  padding-top: 24rpx;
+}
+
+.ai-try-header {
+  font-size: 26rpx;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 20rpx;
+}
+
+.ai-try-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12rpx;
+}
+
+.ai-try-btn {
+  --td-button-default-color: #0052d9 !important;
+  --td-button-default-bg-color: #f2f3ff !important;
+  --td-button-default-border-color: transparent !important;
+  --td-button-font-size: 24rpx !important;
+  --td-button-extra-small-height: 56rpx !important;
+  font-weight: 400 !important;
+  padding: 0 24rpx !important;
+  border-radius: 28rpx !important;
+  margin-bottom: 8rpx;
+  transition: all 0.2s ease;
+
+  &:active {
+    opacity: 0.7;
+    transform: scale(0.96);
+  }
+}
+
+.form-section {
+  background: white;
+  margin: 20rpx;
+  border-radius: 16rpx;
+  overflow: hidden;
+}
+
+.form-item {
+  padding: 32rpx;
+  border-bottom: 1rpx solid #f0f0f0;
+}
+
+.form-item:last-child {
+  border-bottom: none;
+}
+
+.date-picker {
+  width: 100%;
+}
+
+.picker-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24rpx 32rpx;
+  background: #f8f8f8;
+  border-radius: 12rpx;
+  min-height: 88rpx;
+}
+
+.picker-main {
+  display: flex;
+  flex-direction: column;
+  gap: 8rpx;
+}
+
+.picker-text {
+  font-size: 30rpx;
+  color: #333;
+}
+
+.picker-lunar-hint {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.picker-placeholder {
+  font-size: 32rpx;
+  color: #999;
+}
+
+// 公历/农历切换开关
+.date-mode-switch {
+  display: flex;
+  background: #f0f0f0;
+  border-radius: 12rpx;
+  padding: 4rpx;
+  margin-bottom: 24rpx;
+}
+
+.switch-item {
+  flex: 1;
+  text-align: center;
+  padding: 16rpx 0;
+  font-size: 28rpx;
+  color: #666;
+  border-radius: 8rpx;
+  transition: all 0.2s ease;
+}
+
+.switch-item.active {
+  background: #fff;
+  color: #ff6b6b;
+  font-weight: 500;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.08);
+}
+
+// 农历选择器组
+.lunar-picker-group {
+  background: #f8f8f8;
+  border-radius: 12rpx;
+  padding: 24rpx;
+}
+
+.lunar-picker-row {
+  display: flex;
+  gap: 16rpx;
+  margin-bottom: 20rpx;
+}
+
+.lunar-picker {
+  flex: 1;
+}
+
+.lunar-picker-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20rpx 16rpx;
+  background: #fff;
+  border-radius: 8rpx;
+  font-size: 28rpx;
+  color: #333;
+  box-shadow: 0 2rpx 8rpx rgba(0, 0, 0, 0.04);
+}
+
+.solar-date-hint {
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+  padding: 16rpx;
+  background: #fff5f5;
+  border-radius: 8rpx;
+  margin-bottom: 16rpx;
+}
+
+.hint-label {
+  font-size: 24rpx;
+  color: #999;
+}
+
+.hint-value {
+  font-size: 26rpx;
+  color: #ff6b6b;
+  font-weight: 500;
+}
+
+.date-festival-hint {
+  display: flex;
+  align-items: center;
+}
+
+.festival-tag {
+  display: inline-block;
+  padding: 8rpx 16rpx;
+  background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+  color: #fff;
+  font-size: 24rpx;
+  border-radius: 20rpx;
+}
+
+.form-label {
+  font-size: 30rpx;
+  color: #333;
+  font-weight: 500;
+  margin-bottom: 20rpx;
+}
+
+// 类型选择器
+.type-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.type-option {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+  padding: 16rpx 24rpx;
+  background: #f5f5f5;
+  border-radius: 12rpx;
+  border: 2rpx solid transparent;
+  transition: all 0.2s ease;
+}
+
+.type-option.active {
+  background: #e8f3ff;
+  border-color: #0052d9;
+}
+
+.type-dot {
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 50%;
+}
+
+.type-label {
+  font-size: 26rpx;
+  color: #333;
+}
+
+// 颜色选择器
+.color-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16rpx;
+}
+
+.color-option {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 50%;
+  border: 4rpx solid transparent;
+  transition: all 0.2s ease;
+}
+
+.color-option.active {
+  border-color: #333;
+  transform: scale(1.1);
+}
+
+.form-actions {
+  position: fixed;
+  bottom: calc(112rpx + env(safe-area-inset-bottom));
+  left: 0;
+  right: 0;
+  background: white;
+  padding: 20rpx 32rpx;
+  box-shadow: 0 -2rpx 12rpx rgba(0, 0, 0, 0.1);
+  display: flex;
+  gap: 20rpx;
+}
+
+.cancel-btn {
+  flex: 1;
+}
+
+.save-btn {
+  flex: 2;
+}
+
+// 特殊日期提醒开关
+.switch-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.switch-label {
+  flex: 1;
+}
+
+.switch-title {
+  font-size: 30rpx;
+  color: #333;
+  font-weight: 500;
+  display: block;
+}
+
+.switch-desc {
+  font-size: 24rpx;
+  color: #999;
+  margin-top: 8rpx;
+  display: block;
+}

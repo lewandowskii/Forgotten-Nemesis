@@ -1,0 +1,238 @@
+<view class="add-memory-container">
+  <!-- AI 智能识别区域 -->
+  <view class="ai-section {{isAiCollapsed ? 'ai-collapsed-border' : ''}}">
+    <view class="ai-header" bindtap="toggleAiCollapse">
+      <view class="ai-header-left">
+        <text class="ai-icon">✨</text>
+        <text class="ai-title">AI 智能识别</text>
+      </view>
+      <view class="ai-header-right">
+        <text class="ai-collapsed-hint" wx:if="{{isAiCollapsed}}">点击展开，体验智能填表</text>
+        <t-icon name="{{isAiCollapsed ? 'chevron-down' : 'chevron-up'}}" size="40rpx" color="#666" />
+      </view>
+    </view>
+    
+    <view class="ai-content {{isAiCollapsed ? 'collapsed' : ''}}">
+      <view class="ai-input-wrapper">
+        <view class="ai-textarea-container">
+          <t-textarea
+            placeholder="例如：我老婆的生日是公历五月十八日"
+            value="{{aiInput}}"
+            bind:change="onAiInputChange"
+            autosize
+            class="ai-textarea"
+            maxlength="100"
+          />
+          <view class="ai-clear-btn" wx:if="{{aiInput}}" bindtap="onClearAiInput">
+            <t-icon name="close-circle-filled" size="32rpx" color="#ccc" />
+          </view>
+        </view>
+        <t-button
+          theme="primary"
+          size="small"
+          icon="magic"
+          loading="{{aiLoading}}"
+          bind:tap="onAiAnalyze"
+          class="ai-btn"
+        >
+          识别并填充
+        </t-button>
+      </view>
+      <view class="ai-try-section">
+        <view class="ai-try-header">你可以试试：</view>
+        <view class="ai-try-list">
+          <t-button
+            wx:for="{{aiExamples}}"
+            wx:key="*this"
+            size="extra-small"
+            theme="default"
+            variant="outline"
+            shape="round"
+            bind:tap="onTryExample"
+            data-text="{{item}}"
+            class="ai-try-btn"
+          >
+            {{item}}
+          </t-button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view class="form-section">
+    <view class="form-item">
+      <view class="form-label">纪念日标题 *</view>
+      <t-input
+        placeholder="请输入纪念日标题"
+        value="{{title}}"
+        bind:change="onTitleInput"
+        maxlength="50"
+      />
+    </view>
+
+    <view class="form-item">
+      <view class="form-label">日期 *</view>
+      
+      <!-- 公历/农历切换开关 -->
+      <view class="date-mode-switch">
+        <view class="switch-item {{dateMode === 'solar' ? 'active' : ''}}" bindtap="onDateModeSwitch" data-mode="solar">
+          <text>公历</text>
+        </view>
+        <view class="switch-item {{dateMode === 'lunar' ? 'active' : ''}}" bindtap="onDateModeSwitch" data-mode="lunar">
+          <text>农历</text>
+        </view>
+      </view>
+      
+      <!-- 公历选择器 -->
+      <picker
+        wx:if="{{dateMode === 'solar'}}"
+        mode="date"
+        value="{{targetDate}}"
+        start="{{minDate}}"
+        end="{{maxDate}}"
+        bindchange="onDateChange"
+        class="date-picker"
+      >
+        <view class="picker-content">
+          <view class="picker-main">
+            <text class="picker-text">{{targetDate || '请选择日期'}}</text>
+            <text class="picker-lunar-hint" wx:if="{{lunarDateStr}}">{{lunarDateStr}}</text>
+          </view>
+          <text class="picker-placeholder">📅</text>
+        </view>
+      </picker>
+      
+      <!-- 农历选择器 -->
+      <view wx:else class="lunar-picker-group">
+        <view class="lunar-picker-row">
+          <!-- 年份选择 -->
+          <picker
+            mode="selector"
+            range="{{lunarYearOptions}}"
+            range-key="label"
+            value="{{lunarYearIndex}}"
+            bindchange="onLunarYearChange"
+            class="lunar-picker"
+          >
+            <view class="lunar-picker-content">
+              <text>{{lunarYearOptions[lunarYearIndex].label}}</text>
+            </view>
+          </picker>
+          
+          <!-- 月份选择 -->
+          <picker
+            mode="selector"
+            range="{{lunarMonthOptions}}"
+            range-key="label"
+            value="{{lunarMonthIndex}}"
+            bindchange="onLunarMonthChange"
+            class="lunar-picker"
+          >
+            <view class="lunar-picker-content">
+              <text>{{lunarMonthOptions[lunarMonthIndex].label}}</text>
+            </view>
+          </picker>
+          
+          <!-- 日期选择 -->
+          <picker
+            mode="selector"
+            range="{{lunarDayOptions}}"
+            range-key="label"
+            value="{{lunarDayIndex}}"
+            bindchange="onLunarDayChange"
+            class="lunar-picker"
+          >
+            <view class="lunar-picker-content">
+              <text>{{lunarDayOptions[lunarDayIndex].label}}</text>
+            </view>
+          </picker>
+        </view>
+        
+        <!-- 显示对应公历日期 -->
+        <view class="solar-date-hint" wx:if="{{targetDate}}">
+          <text class="hint-label">对应公历：</text>
+          <text class="hint-value">{{targetDate}}</text>
+        </view>
+        
+        <!-- 显示节日/节气 -->
+        <view class="date-festival-hint" wx:if="{{festivalHint}}">
+          <text class="festival-tag">{{festivalHint}}</text>
+        </view>
+      </view>
+    </view>
+
+    <view class="form-item">
+      <view class="form-label">类型</view>
+      <view class="type-selector">
+        <view
+          wx:for="{{typeOptions}}"
+          wx:key="value"
+          class="type-option {{currentType === item.value ? 'active' : ''}}"
+          bindtap="onTypeSelect"
+          data-value="{{item.value}}"
+        >
+          <view class="type-dot" style="background: {{item.color}}"></view>
+          <text class="type-label">{{item.label}}</text>
+        </view>
+      </view>
+    </view>
+
+    <!-- 特殊日期提醒开关（仅恋爱纪念日显示） -->
+    <view class="form-item" wx:if="{{currentType === 'anniversary'}}">
+      <view class="switch-row">
+        <view class="switch-label">
+          <text class="switch-title">特殊日期提醒</text>
+          <text class="switch-desc">开启后提醒99天、每100天、1314天等特殊节点</text>
+        </view>
+        <switch checked="{{enableSpecialDays}}" bindchange="onSpecialDaysSwitch" color="#FF6B6B" />
+      </view>
+    </view>
+
+    <view class="form-item">
+      <view class="form-label">颜色标记</view>
+      <view class="color-selector">
+        <view
+          wx:for="{{colorOptions}}"
+          wx:key="index"
+          class="color-option {{currentColor === item ? 'active' : ''}}"
+          style="background: {{item}}"
+          bindtap="onColorSelect"
+          data-color="{{item}}"
+        ></view>
+      </view>
+    </view>
+
+    <view class="form-item">
+      <view class="form-label">描述</view>
+      <t-textarea
+        placeholder="请输入纪念日描述（选填）"
+        value="{{description}}"
+        bind:change="onDescriptionInput"
+        maxlength="200"
+        autosize
+      />
+    </view>
+
+    <!-- 纪念日提醒开关 -->
+    <view class="form-item">
+      <view class="switch-row">
+        <view class="switch-label">
+          <text class="switch-title">开启提醒</text>
+          <text class="switch-desc">在纪念日当天收到消息提醒（需授权）</text>
+        </view>
+        <switch checked="{{enableReminder}}" bindchange="onReminderSwitch" color="#FF6B6B" />
+      </view>
+    </view>
+  </view>
+
+  <view class="form-actions">
+    <t-button theme="default" size="large" bindtap="onCancel" class="cancel-btn">
+      取消
+    </t-button>
+    <t-button theme="primary" size="large" bindtap="onSave" class="save-btn">
+      保存
+    </t-button>
+  </view>
+</view>
+
+<t-message id="t-message" />

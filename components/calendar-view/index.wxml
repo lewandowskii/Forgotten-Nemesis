@@ -1,0 +1,62 @@
+<view class="calendar-container">
+  <!-- 日历头部 -->
+  <view class="calendar-header">
+    <view class="month-nav prev" bindtap="onPrevMonth">
+      <text class="nav-icon">‹</text>
+    </view>
+    <view class="month-title">
+      <text class="year-text">{{currentYear}}年</text>
+      <text class="month-text">{{currentMonth}}月</text>
+    </view>
+    <view class="month-nav next" bindtap="onNextMonth">
+      <text class="nav-icon">›</text>
+    </view>
+  </view>
+
+  <!-- 星期标题 -->
+  <view class="week-header">
+    <view 
+      wx:for="{{weekDays}}" 
+      wx:key="index" 
+      class="week-day {{index === 0 ? 'weekend' : index === 6 ? 'weekend' : ''}}"
+    >
+      {{item}}
+    </view>
+  </view>
+
+  <!-- 日历网格 -->
+  <view class="calendar-grid">
+    <view
+      wx:for="{{calendarDays}}"
+      wx:key="index"
+      class="calendar-cell {{!item ? 'empty' : ''}} {{item.isToday ? 'today' : ''}} {{item.isSelected ? 'selected' : ''}} {{item.isSpecial ? 'special-day' : ''}}"
+      bindtap="onSelectDate"
+      data-date="{{item.dateStr}}"
+    >
+      <view wx:if="{{item}}" class="day-content">
+        <text class="day-number {{item.isSelected ? 'selected-text' : item.isToday ? 'today-text' : ''}} {{item.isSpecial ? 'special-number' : ''}}">{{item.day}}</text>
+        <!-- 农历日期 -->
+        <text wx:if="{{item.lunarText}}" class="lunar-text">{{item.lunarText}}</text>
+        <!-- 当月纪念日标记（蓝色圆点） -->
+        <view wx:if="{{item.isInMonthMemory && !item.isSpecial}}" class="memory-indicator in-month"></view>
+        <!-- 即将到来标记点（橙色圆点，30天内） -->
+        <view wx:if="{{item.isUpcoming && !item.isInMonthMemory && !item.isSpecial}}" class="memory-indicator upcoming"></view>
+        <!-- 特殊日期标记 -->
+        <view wx:if="{{item.isSpecial}}" class="special-indicator">
+          <text class="special-icon">💕</text>
+        </view>
+        <!-- 纪念日小圆点（保留原有逻辑） -->
+        <view class="event-dots">
+          <view
+            wx:for="{{memories}}"
+            wx:for-item="memory"
+            wx:key="id"
+            wx:if="{{memory.targetDate && memory.targetDate.split('-')[1] * 1 == currentMonth && memory.targetDate.split('-')[2] * 1 == item.day}}"
+            class="event-dot"
+            style="background: {{memory.color}}"
+          ></view>
+        </view>
+      </view>
+    </view>
+  </view>
+</view>

@@ -1,0 +1,93 @@
+<t-toast id="t-toast" />
+
+<view class="my">
+  <image class="nav-bg" src="/static/bg_navbar.png" />
+  <nav title-text="我的" />
+  <view class="my-info">
+    <t-cell-group>
+      <t-cell wx:if="{{isLoad && userInfo}}" bordered="{{false}}">
+        <t-avatar image="{{userInfo.avatarUrl}}" slot="left-icon" size="large" />
+        <view class="my-info__person" slot="description">
+          <view class="name">{{userInfo.nickName || '用户'}}</view>
+          <view class="tags">
+            <t-tag wx:if="{{userInfo.phoneNumber}}" class="tag" variant="light" icon="call">已绑定手机</t-tag>
+            <t-tag wx:if="{{userInfo.city}}" class="tag" variant="light" icon="location">
+            {{userInfo.city}}
+            </t-tag>
+          </view>
+        </view>
+        <t-icon slot="right-icon" name="edit" size="40rpx" color="#000000e6" bindtap="onNavigateTo" />
+      </t-cell>
+      <t-cell
+        wx:if="{{!isLoad}}"
+        title="请先登录/注册"
+        bordered="{{false}}"
+        t-class-title="cell-class-title"
+        t-class-center="cell-class-center"
+        bindtap="onLogin"
+      >
+        <t-avatar slot="left-icon" icon="user" size="128rpx" />
+      </t-cell>
+    </t-cell-group>
+    <t-divider t-class="divider-class" />
+    <t-grid t-class="grid-class" column="{{3}}">
+      <t-grid-item
+        wx:for="{{gridList}}"
+        wx:for-item="gridItem"
+        wx:key="type"
+        text="{{gridItem.name}}"
+        icon="{{gridItem.icon}}"
+        class="grid-item"
+        data-item="{{gridItem}}"
+        bindclick="onEleClick"
+      />
+    </t-grid>
+  </view>
+
+  <!-- 数据统计卡片 -->
+  <view class="my-stats" wx:if="{{isLoad}}">
+    <t-cell-group theme="card">
+      <t-cell title="我的数据" note="查看详细统计" arrow bindtap="onDataCenterClick">
+        <view class="stats-content" slot="note">
+          <view class="stat-item">
+            <text class="stat-value">{{stats.publishedCount}}</text>
+            <text class="stat-label">已发布</text>
+          </view>
+          <view class="stat-divider"></view>
+          <view class="stat-item">
+            <text class="stat-value">{{stats.draftCount}}</text>
+            <text class="stat-label">草稿箱</text>
+          </view>
+          <view class="stat-divider"></view>
+          <view class="stat-item">
+            <text class="stat-value">{{stats.favoriteCount}}</text>
+            <text class="stat-label">收藏</text>
+          </view>
+        </view>
+      </t-cell>
+    </t-cell-group>
+  </view>
+
+  <!-- 功能操作 -->
+  <t-cell-group theme="card" wx:if="{{isLoad}}">
+    <t-cell title="数据同步" leftIcon="refresh" note="同步本地数据到云端" arrow hover bindtap="onSyncData" />
+    <t-cell title="清理缓存" leftIcon="delete" note="清理临时文件和数据" arrow hover bindtap="onClearCache" />
+  </t-cell-group>
+
+  <!-- 设置列表 -->
+  <t-cell-group theme="card">
+    <t-cell
+      wx:for="{{settingList}}"
+      wx:for-item="item"
+      wx:key="type"
+      title="{{item.name}}"
+      url="{{item.url}}"
+      leftIcon="{{item.icon}}"
+      hover
+      arrow
+      data-item="{{item}}"
+      bindclick="onEleClick"
+    />
+    <t-cell wx:if="{{isLoad}}" title="退出登录" leftIcon="close" note="退出当前账号" hover bindtap="onLogout" t-class-note="logout-note" />
+  </t-cell-group>
+</view>

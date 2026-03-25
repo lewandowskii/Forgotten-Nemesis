@@ -1,0 +1,31 @@
+.DS_Store
+__MACOSX/
+
+# WeChat local/private config
+project.private.config.json
+
+# Dependencies
+node_modules/
+
+# Local AI / IDE metadata
+.agent/
+.agents/
+.augment/
+.claude/
+.codebuddy/
+.commandcode/
+.continue/
+.cortex/
+.crush/
+.factory/
+.goose/
+.iflow/
+.junie/
+.kilocode/
+.kiro/
+.kode/
+.mcpjam/
+.qwen/
+.roo/
+.trae/
+.windsurf/

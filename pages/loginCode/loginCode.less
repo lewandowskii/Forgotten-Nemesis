@@ -1,0 +1,54 @@
+.login-code {
+  &__title {
+    color: rgba(0, 0, 0, 0.9);
+    font-size: 56rpx;
+    font-weight: 600;
+    line-height: 72rpx;
+    padding: 80rpx 32rpx 40rpx;
+  }
+
+  &__tips {
+    margin: 0 32rpx;
+    color: rgba(0, 0, 0, 0.4);
+    font-size: 28rpx;
+    line-height: 40rpx;
+  }
+
+  &__button {
+    margin: 80rpx 32rpx;
+
+    .phone-login-btn {
+      width: 100%;
+      height: 96rpx;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-radius: 48rpx;
+      color: #fff;
+      font-size: 32rpx;
+      font-weight: 500;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      &::after {
+        border: none;
+      }
+
+      &[disabled] {
+        opacity: 0.6;
+      }
+    }
+  }
+
+  &__footer {
+    margin-top: 48rpx;
+    text-align: center;
+  }
+
+  &__link {
+    display: inline-block;
+    color: #667eea;
+    font-size: 28rpx;
+    padding: 16rpx;
+  }
+}
