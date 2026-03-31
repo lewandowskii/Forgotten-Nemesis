@@ -90,16 +90,6 @@ Page({
     currentLunarMonth: 1,
     currentLunarDay: 1,
     currentIsLeap: false,
-    // AI 输入
-    aiInput: "",
-    aiLoading: false,
-    aiExamples: [
-      "我父亲的生日是2月19日",
-      "每月5号是发薪日",
-      "农历八月十五是中秋节",
-      "2月18日是结婚纪念日",
-    ],
-    isAiCollapsed: true,
   },
 
   onLoad() {
@@ -234,12 +224,6 @@ Page({
     });
   },
 
-  toggleAiCollapse() {
-    this.setData({
-      isAiCollapsed: !this.data.isAiCollapsed,
-    });
-  },
-
   resetForm() {
     // 如果是从编辑模式退出（比如保存后），需要清除 memoryId
     const editMemory = wx.getStorageSync("editMemory");
@@ -271,8 +255,6 @@ Page({
         dateMode: "solar" as DatePickerMode,
         lunarDateStr: "",
         festivalHint: "",
-        aiInput: "",
-        aiLoading: false,
         // 同时初始化农历状态为今天
         currentLunarYear: lunarDate.year,
         currentLunarMonth: lunarDate.month,
@@ -321,142 +303,6 @@ Page({
       lunarMonthIndex: monthIndex >= 0 ? monthIndex : 0,
       lunarDayOptions: dayOptions,
       lunarDayIndex: dayIndex >= 0 ? dayIndex : 0,
-    });
-  },
-
-  onAiInputChange(e: any) {
-    this.setData({
-      aiInput: e.detail.value,
-    });
-  },
-
-  onTryExample(e: any) {
-    const text = e.currentTarget.dataset.text;
-    this.setData({
-      aiInput: text,
-    });
-  },
-
-  async onAiAnalyze() {
-    if (!this.data.aiInput.trim()) {
-      Message.warning({
-        context: this,
-        offset: [120, 32],
-        duration: 2000,
-        content: "请输入内容",
-      });
-      return;
-    }
-
-    this.setData({ aiLoading: true });
-
-    try {
-      // @ts-ignore
-      const model = wx.cloud.extend.AI.createModel("deepseek");
-
-      const res = await model.generateText({
-        model: "deepseek-v3",
-        messages: [
-          {
-            role: "system",
-            content:
-              '你是一个智能助手，负责解析用户输入的纪念日信息。请将用户输入解析为以下 JSON 格式：\n{\n  "title": "纪念日标题",\n  "isLunar": boolean, // 是否为农历\n  "type": "birthday" | "anniversary" | "memory" | "holiday", // 类型\n  "description": "描述信息", // 可选\n  "year": number, // 年份\n  "month": number, // 月份\n  "day": number // 日期\n}\n如果用户未指定年份，默认使用当前年份或下一个即将到来的日期。如果用户输入的是农历日期，请在 year, month, day 字段返回农历日期，isLunar 为 true。如果用户输入的是公历日期，isLunar 为 false。',
-          },
-          { role: "user", content: this.data.aiInput },
-        ],
-      });
-
-      console.log("AI Response:", res);
-
-      const content = res.choices[0].message.content;
-      // Extract JSON
-      const jsonMatch = content.match(/\{[\s\S]*\}/);
-
-      if (jsonMatch) {
-        const result = JSON.parse(jsonMatch[0]);
-        console.log("Parsed Result:", result);
-        this.applyAiResult(result);
-      } else {
-        throw new Error("无法解析 AI 返回结果");
-      }
-    } catch (err) {
-      console.error("AI Error:", err);
-      Message.error({
-        context: this,
-        offset: [120, 32],
-        duration: 2000,
-        content: "识别失败，请重试",
-      });
-    } finally {
-      this.setData({ aiLoading: false });
-    }
-  },
-
-  applyAiResult(result: any) {
-    const { title, type, isLunar, year, month, day, description } = result;
-    const updates: any = {};
-
-    if (title) updates.title = title;
-    if (description) updates.description = description;
-
-    // Set Type
-    if (type && MEMORY_TYPE_COLORS[type]) {
-      updates.currentType = type;
-      updates.currentColor = MEMORY_TYPE_COLORS[type];
-      // Special logic for anniversary
-      updates.enableSpecialDays = type === "anniversary";
-    }
-
-    // Set Date
-    if (isLunar) {
-      updates.dateMode = "lunar";
-    } else {
-      updates.dateMode = "solar";
-      const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`;
-      updates.targetDate = dateStr;
-    }
-
-    this.setData(updates, () => {
-      if (isLunar) {
-        // Set Lunar Date
-        // 1. Set Year
-        const yearIndex = this.data.lunarYearOptions.findIndex(
-          (y: any) => y.value === year,
-        );
-        if (yearIndex >= 0) {
-          this.setData({ lunarYearIndex: yearIndex, currentLunarYear: year });
-          this.updateLunarMonthOptions(year);
-
-          // 2. Set Month
-          const monthOptions = this.data.lunarMonthOptions;
-          // Simplified match: find first match for month value
-          const monthIndex = monthOptions.findIndex(
-            (m: any) => m.value === month,
-          );
-          if (monthIndex >= 0) {
-            this.setData({ lunarMonthIndex: monthIndex });
-            const isLeap = monthOptions[monthIndex].isLeap;
-            this.updateLunarDayOptions(year, month, isLeap);
-
-            // 3. Set Day
-            const dayOptions = this.data.lunarDayOptions;
-            const dayIndex = dayOptions.findIndex((d: any) => d.value === day);
-            if (dayIndex >= 0) {
-              this.setData({ lunarDayIndex: dayIndex, currentLunarDay: day });
-              this.updateSolarDateFromLunar();
-            }
-          }
-        }
-      } else {
-        this.updateLunarDateStr();
-      }
-
-      Message.success({
-        context: this,
-        offset: [120, 32],
-        duration: 2000,
-        content: "识别成功",
-      });
     });
   },
 
@@ -745,7 +591,7 @@ Page({
     if (!this.data.title.trim()) {
       Message.warning({
         context: this,
-        offset: [120, 32],
+        offset: [96, 32],
         duration: 2000,
         content: "请输入纪念日标题",
       });
@@ -755,7 +601,7 @@ Page({
     if (!this.data.targetDate) {
       Message.warning({
         context: this,
-        offset: [120, 32],
+        offset: [96, 32],
         duration: 2000,
         content: "请选择日期",
       });
@@ -813,7 +659,7 @@ Page({
     } else {
       Message.error({
         context: this,
-        offset: [120, 32],
+        offset: [96, 32],
         duration: 2000,
         content: this.data.memoryId ? "更新失败，请重试" : "添加失败，请重试",
       });
@@ -834,7 +680,7 @@ Page({
         } else if (res[REMINDER_TEMPLATE_ID] === "reject") {
           Message.warning({
             context: this,
-            offset: [120, 32],
+            offset: [96, 32],
             duration: 2000,
             content: "您已拒绝订阅提醒",
           });
@@ -874,7 +720,7 @@ Page({
   showSuccessAndNavigate() {
     Message.success({
       context: this,
-      offset: [120, 32],
+      offset: [96, 32],
       duration: 2000,
       content: this.data.memoryId ? "更新成功" : "添加成功",
     });

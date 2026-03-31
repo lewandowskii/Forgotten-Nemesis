@@ -1,6 +1,0 @@
-{
-  "navigationBarTitleText": "智能对话",
-  "usingComponents": {
-    "agent-ui": "/components/agent-ui/index"
-  }
-}

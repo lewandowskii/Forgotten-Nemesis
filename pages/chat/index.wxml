@@ -1,8 +1,0 @@
-<view class="chat-container">
-  <agent-ui 
-    agentConfig="{{agentConfig}}" 
-    showBotAvatar="{{showBotAvatar}}" 
-    chatMode="{{chatMode}}" 
-    modelConfig="{{modelConfig}}"
-  ></agent-ui>
-</view>

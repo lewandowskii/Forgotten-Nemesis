@@ -1,0 +1,31 @@
+.more-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f7f8ff 0%, #f2f3f8 100%);
+  padding: 28rpx 24rpx calc(24rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+.placeholder-card {
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 48rpx 36rpx;
+  box-shadow: 0 10rpx 24rpx rgba(30, 39, 76, 0.08);
+  text-align: center;
+  margin-top: 120rpx;
+}
+
+.placeholder-title {
+  display: block;
+  font-size: 40rpx;
+  font-weight: 600;
+  color: #242938;
+  margin-bottom: 18rpx;
+}
+
+.placeholder-desc {
+  display: block;
+  font-size: 28rpx;
+  color: #7f8799;
+  line-height: 1.7;
+  margin-bottom: 36rpx;
+}

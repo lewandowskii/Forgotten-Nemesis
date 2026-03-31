@@ -2,7 +2,7 @@
   "pages": [
     "pages/home/index",
     "pages/note/index",
-    "pages/chat/index",
+    "pages/more/index",
     "pages/note-edit/index",
     "pages/add-memory/index",
     "pages/my/index"
@@ -30,8 +30,8 @@
         "text": "笔记"
       },
       {
-        "pagePath": "pages/chat/index",
-        "text": "对话"
+        "pagePath": "pages/more/index",
+        "text": "更多"
       }
     ]
   },

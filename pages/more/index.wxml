@@ -1,0 +1,7 @@
+<view class="more-page">
+  <view class="placeholder-card">
+    <text class="placeholder-title">更多功能正在准备中</text>
+    <text class="placeholder-desc">当前版本聚焦纪念日与笔记基础能力，后续会逐步开放更多功能。</text>
+    <t-button theme="primary" shape="round" bind:tap="goHome">返回首页</t-button>
+  </view>
+</view>

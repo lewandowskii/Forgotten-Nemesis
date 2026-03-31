@@ -1,5 +1,5 @@
 <t-tab-bar value="{{ value }}" theme="tag" split="{{ false }}" bind:change="handleChange">
   <t-tab-bar-item icon="home" value="home">首页</t-tab-bar-item>
   <t-tab-bar-item icon="edit" value="note">笔记</t-tab-bar-item>
-  <t-tab-bar-item icon="chat" value="chat">对话</t-tab-bar-item>
+  <t-tab-bar-item icon="app" value="more">更多</t-tab-bar-item>
 </t-tab-bar>

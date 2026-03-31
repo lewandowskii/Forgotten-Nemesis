@@ -38,8 +38,8 @@ Component({
         isSidebar: true,
       },
       {
-        title: '对话页',
-        url: 'pages/chat/index',
+        title: '更多',
+        url: 'pages/more/index',
         isSidebar: true,
       },
       {
@@ -73,7 +73,7 @@ Component({
   },
   methods: {
     isTabPage(url) {
-      return ['pages/home/index', 'pages/note/index', 'pages/chat/index'].includes(url);
+      return ['pages/home/index', 'pages/note/index', 'pages/more/index'].includes(url);
     },
     openDrawer() {
       this.setData({

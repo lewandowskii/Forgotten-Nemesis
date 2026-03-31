@@ -11,7 +11,15 @@
     </view>
   </view>
 
-  <view class="timeline-wrapper" wx:if="{{groupedNotes.length}}">
+  <view class="loading-block" wx:if="{{loading && !groupedNotes.length}}">
+    <view class="loading-card" wx:for="{{[1,2,3]}}" wx:key="*this">
+      <view class="loading-line loading-line-title"></view>
+      <view class="loading-line loading-line-content"></view>
+      <view class="loading-line loading-line-time"></view>
+    </view>
+  </view>
+
+  <view class="timeline-wrapper" wx:elif="{{groupedNotes.length}}">
     <view class="timeline-axis"></view>
     <view wx:for="{{groupedNotes}}" wx:key="dateKey" class="date-group">
       <view class="date-head">
@@ -39,7 +47,7 @@
 
   <view class="empty-block" wx:else>
     <text class="empty-title">还没有笔记</text>
-    <text class="empty-desc">写下第一条内容，后续可和纪念日、对话能力联动</text>
+    <text class="empty-desc">写下第一条内容，持续沉淀你的日常记录</text>
     <t-button theme="primary" shape="round" icon="add" bind:tap="goCreateNote">新建笔记</t-button>
   </view>
 

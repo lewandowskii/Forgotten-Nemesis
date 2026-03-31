@@ -25,7 +25,7 @@ Page({
     config: {
       count: 1,
     },
-    tags: ['AI绘画', '版权素材', '原创', '风格灵动'],
+    tags: ['插画创作', '版权素材', '原创', '风格灵动'],
   },
   handleSuccess(e) {
     const { files } = e.detail;

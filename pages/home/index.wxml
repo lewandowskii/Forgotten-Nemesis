@@ -64,7 +64,7 @@
             </view>
           </view>
           <text class="empty-text">还没有纪念日</text>
-          <text class="empty-desc">你可以新建一条，也可以直接在对话里说“帮我记一下妈妈生日是5月20号”</text>
+          <text class="empty-desc">你可以先新建一条纪念日，后续这里会持续帮你管理重要日子</text>
           <t-button theme="primary" size="medium" icon="add" shape="round" bind:tap="goAddMemory" class="empty-add-btn">
             创建第一个纪念日
           </t-button>
