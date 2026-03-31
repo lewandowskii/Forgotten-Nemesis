@@ -115,10 +115,10 @@ class AuthAPI {
       duration: 2000
     })
 
-    // 跳转到登录页
+    // 退出后回到首页，不再进入独立登录页
     setTimeout(() => {
-      wx.redirectTo({
-        url: '/pages/login/login'
+      wx.switchTab({
+        url: '/pages/home/index'
       })
     }, 1500)
   }
@@ -196,41 +196,6 @@ class AuthAPI {
     }
   }
 
-  // 绑定手机号
-  static async bindPhone(code) {
-    try {
-      const app = getApp()
-      if (!app.globalData.isLoggedIn || !app.globalData.userInfo) {
-        return {
-          success: false,
-          message: '用户未登录'
-        }
-      }
-
-      const userId = app.globalData.userInfo._id
-      const result = await CloudAPI.phoneLogin(code)
-
-      if (result.success) {
-        app.globalData.userInfo.phoneNumber = result.data.phoneNumber
-        wx.setStorageSync('userInfo', app.globalData.userInfo)
-        return {
-          success: true,
-          message: '绑定成功'
-        }
-      } else {
-        return {
-          success: false,
-          message: result.message || '绑定失败'
-        }
-      }
-    } catch (error) {
-      console.error('绑定手机号失败:', error)
-      return {
-        success: false,
-        message: error.message || '绑定失败'
-      }
-    }
-  }
 }
 
 module.exports = AuthAPI

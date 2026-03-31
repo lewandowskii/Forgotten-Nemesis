@@ -1,0 +1,183 @@
+.note-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f6f7ff 0%, #f1f3fa 100%);
+  padding: 24rpx 24rpx calc(112rpx + 48rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+.filter-row {
+  display: flex;
+  gap: 16rpx;
+  overflow-x: auto;
+  white-space: nowrap;
+  padding: 8rpx 0 20rpx;
+}
+
+.filter-pill {
+  flex-shrink: 0;
+  min-width: 132rpx;
+  height: 72rpx;
+  line-height: 72rpx;
+  text-align: center;
+  border-radius: 20rpx;
+  background: #ffffff;
+  color: #7f7f8f;
+  font-size: 30rpx;
+  font-weight: 500;
+  box-shadow: 0 4rpx 14rpx rgba(48, 56, 88, 0.05);
+}
+
+.filter-pill.active {
+  background: linear-gradient(135deg, #5d7cff 0%, #4f70f2 100%);
+  color: #fff;
+  box-shadow: 0 10rpx 22rpx rgba(79, 112, 242, 0.28);
+}
+
+.timeline-wrapper {
+  position: relative;
+  padding-top: 8rpx;
+}
+
+.timeline-axis {
+  position: absolute;
+  left: 11rpx;
+  top: 68rpx;
+  bottom: 48rpx;
+  width: 0;
+  border-left: 2rpx dashed rgba(95, 122, 255, 0.55);
+}
+
+.date-group {
+  margin-bottom: 28rpx;
+}
+
+.date-head {
+  display: flex;
+  align-items: center;
+  gap: 18rpx;
+  margin-bottom: 20rpx;
+}
+
+.axis-dot {
+  width: 22rpx;
+  height: 22rpx;
+  border-radius: 50%;
+  background: #5c79fa;
+  box-shadow: 0 0 0 8rpx rgba(92, 121, 250, 0.2);
+  flex-shrink: 0;
+}
+
+.date-title {
+  font-size: 46rpx;
+  color: #241a29;
+  font-weight: 700;
+}
+
+.note-list {
+  margin-left: 34rpx;
+  display: flex;
+  flex-direction: column;
+  gap: 20rpx;
+}
+
+.note-card {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 26rpx;
+  padding: 26rpx;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  box-shadow: 0 8rpx 24rpx rgba(30, 39, 76, 0.08);
+}
+
+.note-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.note-title {
+  font-size: 42rpx;
+  font-weight: 700;
+  color: #2a2230;
+  margin-bottom: 10rpx;
+}
+
+.note-content {
+  font-size: 28rpx;
+  color: #6f6f81;
+  line-height: 1.6;
+  margin-bottom: 16rpx;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.note-date {
+  font-size: 30rpx;
+  color: #9fa2ad;
+}
+
+.card-action {
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 14rpx;
+  background: #eef2ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 16rpx;
+}
+
+.timeline-end {
+  text-align: center;
+  font-size: 26rpx;
+  color: #c7ccd8;
+  margin: 28rpx 0 16rpx;
+}
+
+.empty-block {
+  margin-top: 160rpx;
+  background: #fff;
+  border-radius: 24rpx;
+  padding: 72rpx 40rpx;
+  text-align: center;
+  box-shadow: 0 8rpx 24rpx rgba(35, 44, 78, 0.08);
+}
+
+.empty-title {
+  display: block;
+  font-size: 42rpx;
+  color: #2b2d3a;
+  margin-bottom: 12rpx;
+  font-weight: 600;
+}
+
+.empty-desc {
+  display: block;
+  font-size: 28rpx;
+  color: #8890a5;
+  line-height: 1.6;
+  margin-bottom: 30rpx;
+}
+
+.note-fab {
+  position: fixed;
+  right: 36rpx;
+  bottom: calc(112rpx + 24rpx + env(safe-area-inset-bottom));
+  width: 108rpx;
+  height: 108rpx;
+  border-radius: 54rpx;
+  background: linear-gradient(135deg, #4f70f2 0%, #5f88ff 100%);
+  box-shadow: 0 14rpx 32rpx rgba(79, 112, 242, 0.42);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fab-icon {
+  color: #fff;
+  font-size: 58rpx;
+  line-height: 1;
+  transform: translateY(-2rpx);
+}

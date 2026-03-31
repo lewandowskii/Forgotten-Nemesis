@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "笔记",
+  "usingComponents": {
+    "t-button": "tdesign-miniprogram/button/button",
+    "t-icon": "tdesign-miniprogram/icon/icon"
+  }
+}

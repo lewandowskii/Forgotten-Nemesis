@@ -1,0 +1,93 @@
+.note-edit-page {
+  min-height: 100vh;
+  background: linear-gradient(180deg, #f7f8ff 0%, #f2f3f8 100%);
+  padding: 24rpx 24rpx calc(220rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
+}
+
+.editor-card {
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 20rpx 22rpx 26rpx;
+  min-height: 620rpx;
+  box-shadow: 0 6rpx 18rpx rgba(30, 39, 76, 0.08);
+}
+
+.title-input {
+  margin-bottom: 10rpx;
+}
+
+.editor-divider {
+  height: 1rpx;
+  background: #e8ecf5;
+  margin-bottom: 18rpx;
+}
+
+.content-wrap {
+  position: relative;
+}
+
+.content-input {
+  min-height: 220rpx;
+}
+
+.note-content-textarea {
+  overflow-y: scroll;
+  font-size: 30rpx;
+  color: #1f2430;
+  line-height: 1.7;
+}
+
+.note-content-textarea::placeholder {
+  color: #a0a8ba;
+}
+
+.content-fade {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 52rpx;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, #ffffff 86%);
+}
+
+.footer-panel {
+  position: fixed;
+  left: 24rpx;
+  right: 24rpx;
+  bottom: calc(24rpx + env(safe-area-inset-bottom));
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 20rpx;
+  box-shadow: 0 8rpx 22rpx rgba(30, 39, 76, 0.1);
+}
+
+.time-row {
+  height: 84rpx;
+  border-radius: 14rpx;
+  background: #f4f6fd;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20rpx;
+  box-sizing: border-box;
+  margin-bottom: 16rpx;
+}
+
+.time-row-left {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+}
+
+.time-row-label {
+  font-size: 28rpx;
+  color: #1f2430;
+  font-weight: 600;
+}
+
+.time-row-value {
+  font-size: 26rpx;
+  color: #667085;
+}

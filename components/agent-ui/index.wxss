@@ -107,6 +107,25 @@
   height: 8px;
 }
 
+.quick-action-loading {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8rpx;
+}
+
+.quick-action-loading-icon {
+  width: 24rpx;
+  height: 24rpx;
+  flex-shrink: 0;
+}
+
+.quick-action-loading-text {
+  font-size: 24rpx;
+  line-height: 1.7;
+  color: #6f7890;
+}
+
 .share_btn {
   background-color: #fff;
   margin: 0px !important;
@@ -302,6 +321,10 @@
   display: flex;
   align-items: center;
   gap: 10rpx;
+}
+
+.set-disabled {
+  opacity: 0.45;
 }
 
 .left_btns {

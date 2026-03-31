@@ -87,16 +87,16 @@
           <view style="line-height: 47px; font-size: 20px; font-weight: 500;">{{modelConfig.modelProvider}}</view>
           <view style="line-height: 26px;padding: 0px 16px; font-size: 32rpx;">{{modelConfig.welcomeMsg}}</view>
         </view>
-        <block wx-if="{{!isAgent}}" wx:for="{{chatRecords}}" wx:key="record_id">
+        <block wx-if="{{!isAgent}}" wx:for="{{chatRecords}}" wx:for-index="recordIndex" wx:key="record_id">
           <!-- 系统聊天 -->
-          <view class="system" style="padding-left: {{showBotAvatar?80:0}}rpx;{{(chatRecords.length-1)===index&&chatStatus===1 ? 'background-color: transparent;' : ''}}" wx:if="{{item.role==='assistant'}}">
+          <view class="system" style="padding-left: {{showBotAvatar?80:0}}rpx;{{(chatRecords.length-1)===recordIndex&&chatStatus===1 ? 'background-color: transparent;' : ''}}" wx:if="{{item.role==='assistant'}}">
             <view class="avatar-left" wx:if="{{showBotAvatar}}">
               <image src="{{chatMode==='bot'?bot.avatar:modelConfig.logo}}" mode="aspectFill"
                 style="width: 56rpx;height: 56rpx; border-radius: 28rpx;" />
             </view>
             <view>
               <!-- 最后一条消息，并且是发送状态显示发送中 -->
-              <block wx:if="{{(chatRecords.length-1)===index&&chatStatus===1}}">
+              <block wx:if="{{(chatRecords.length-1)===recordIndex&&chatStatus===1}}">
                 <view style="display: flex;align-items: center; gap: 4px; font-size: 32rpx;line-height: 1.8;">
                   <image src="./imgs/loading.svg" mode="aspectFill" style="width: 14px;height: 14px;" /> 请稍等，正在卖力思考中 🤔
                 </view>
@@ -229,8 +229,25 @@
                     </block>
                   </block>
                 </view>
-                <image wx:if="{{(chatRecords.length - 1) === index && (chatStatus === 2 || chatStatus === 3)}}"
+                <image wx:if="{{(chatRecords.length - 1) === recordIndex && chatStatus === 2}}"
                   mode="widthFix" src='./imgs/loading.svg' style="width: 14px;height: 14px;" />
+                <view wx:if="{{item.pendingQuickActionFlow}}" class="quick-action-loading">
+                  <image src="./imgs/loading.svg" mode="aspectFill" class="quick-action-loading-icon" />
+                  <text class="quick-action-loading-text">正在生成快捷操作...</text>
+                </view>
+                <block wx:if="{{item.quickActions && item.quickActions.length}}">
+                  <quick-action-card
+                    wx:for="{{item.quickActions}}"
+                    wx:for-item="action"
+                    wx:for-index="actionIndex"
+                    wx:key="id"
+                    action="{{action}}"
+                    bind:execute="handleExecuteQuickAction"
+                    data-message-type="chatRecords"
+                    data-message-index="{{recordIndex}}"
+                    data-action-index="{{actionIndex}}"
+                  ></quick-action-card>
+                </block>
               </block>
             </view>
           </view>
@@ -261,7 +278,7 @@
           </view>
         </block>
         <!-- agentV2 聊天列表 -->
-        <block wx:if="{{isAgent}}" wx:for="{{messages}}" wx:key="id">
+        <block wx:if="{{isAgent}}" wx:for="{{messages}}" wx:for-index="messageIndex" wx:key="id">
           <view class="userContent" wx:if="{{item.role==='user' && !item.isHidden}}">
             <view class="user">
               <view class="user_content"> {{item.content}}</view>
@@ -281,6 +298,23 @@
               <block wx:if="{{part.type==='error'}}">
                 <view>{{part.content||''}}</view>
               </block>
+            </block>
+            <view wx:if="{{item.pendingQuickActionFlow}}" class="quick-action-loading">
+              <image src="./imgs/loading.svg" mode="aspectFill" class="quick-action-loading-icon" />
+              <text class="quick-action-loading-text">正在生成快捷操作...</text>
+            </view>
+            <block wx:if="{{item.quickActions && item.quickActions.length}}">
+              <quick-action-card
+                wx:for="{{item.quickActions}}"
+                wx:for-item="action"
+                wx:for-index="actionIndex"
+                wx:key="id"
+                action="{{action}}"
+                bind:execute="handleExecuteQuickAction"
+                data-message-type="messages"
+                data-message-index="{{messageIndex}}"
+                data-action-index="{{actionIndex}}"
+              ></quick-action-card>
             </block>
           </view>
         </block>
@@ -324,9 +358,9 @@
         </view>
         <view hidden="{{useVoice}}" class="input_inner_box">
           <textarea class="input" value="{{inputValue}}" maxlength="1024" bindfocus="bindInputFocus"
-            bindinput="bindKeyInput" placeholder="说点什么吧" bindconfirm="handleSendMessage" confirm-type="send"
+            bindinput="bindKeyInput" placeholder="{{(chatStatus===1 || chatStatus===2) ? '小助手正在思考，请稍候...' : '说点什么吧'}}" bindconfirm="handleSendMessage" confirm-type="send"
             adjust-position cursor-spacing="40" auto-height="{{true}}" show-confirm-bar="{{false}}"
-            bindlinechange="handleLineChange" />
+            bindlinechange="handleLineChange" disabled="{{chatStatus===1 || chatStatus===2}}" />
         </view>
         <text
           style="position: absolute;top: -50%;left: 50%;transform: translateX(-50%);font-size: 12px;color: {{sendStatus === 2 ? '#e84f50;' : ''}}">{{sendStatus === 1 ? "松开发送，上滑取消" : (sendStatus === 2 ? "松开取消" : "")}}</text>
@@ -343,7 +377,8 @@
         </view>
         <view class="right_btns">
           <!-- 加号 -->
-          <image src="./imgs/set.svg" class="set" mode="widthFix" bind:tap="handleClickTools" />
+          <image src="./imgs/set.svg" class="set {{(chatStatus===1 || chatStatus===2) ? 'set-disabled' : ''}}" mode="widthFix"
+            bind:tap="handleClickTools" />
           <!-- 发送按钮 -->
           <view wx:if="{{!!inputValue&&chatStatus===0}}" class="set"
             style="display: flex;justify-content: center;align-items: center;background-color: #436af4;border-radius: 50px;">
@@ -351,7 +386,7 @@
               style="transform-origin: 8px 8px;" />
           </view>
           <!-- 暂停按钮 -->
-          <image src="./imgs/stop.svg" class="set" mode="widthFix" wx:if="{{!(chatStatus===0)}}" bind:tap="stop" />
+          <image src="./imgs/stop.svg" class="set" mode="widthFix" wx:if="{{chatStatus===1 || chatStatus===2}}" bind:tap="stop" />
         </view>
       </view>
     </view>

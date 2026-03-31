@@ -18,6 +18,11 @@ Component({
         isSidebar: true,
       },
       {
+        title: '笔记页',
+        url: 'pages/note/index',
+        isSidebar: true,
+      },
+      {
         title: '搜索页',
         url: 'pages/search/index',
         isSidebar: false,
@@ -35,7 +40,7 @@ Component({
       {
         title: '对话页',
         url: 'pages/chat/index',
-        isSidebar: false,
+        isSidebar: true,
       },
       {
         title: '个人中心页',
@@ -57,11 +62,6 @@ Component({
         url: 'pages/dataCenter/index',
         isSidebar: false,
       },
-      {
-        title: '登录注册页',
-        url: 'pages/login/login',
-        isSidebar: false,
-      },
     ],
     statusHeight: 0,
   },
@@ -72,6 +72,9 @@ Component({
     },
   },
   methods: {
+    isTabPage(url) {
+      return ['pages/home/index', 'pages/note/index', 'pages/chat/index'].includes(url);
+    },
     openDrawer() {
       this.setData({
         visible: true,
@@ -79,8 +82,8 @@ Component({
     },
     itemClick(e) {
       const that = this;
-      const { isSidebar, url } = e.detail.item;
-      if (isSidebar) {
+      const { url } = e.detail.item;
+      if (this.isTabPage(url)) {
         wx.switchTab({
           url: `/${url}`,
         }).then(() => {

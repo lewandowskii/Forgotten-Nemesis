@@ -31,12 +31,6 @@ exports.main = async (event, context) => {
       case 'login':
         return await login(event.userInfo, wxContext)
 
-      case 'phoneLogin':
-        return await phoneLogin(event.code, wxContext)
-
-      case 'bindPhone':
-        return await bindPhone(event.userId, event.phoneNumber, wxContext)
-
       case 'uploadData':
         return await uploadData(event.collectionName, event.data, wxContext)
 
@@ -111,107 +105,6 @@ async function login(userInfo, wxContext) {
     }
   } catch (error) {
     console.error('登录失败:', error)
-    return {
-      success: false,
-      message: error.message
-    }
-  }
-}
-
-// 手机号登录
-async function phoneLogin(code, wxContext) {
-  try {
-    // 获取手机号
-    const phoneResult = await cloud.openapi.phonenumber.getPhoneNumber({
-      code: code
-    })
-
-    if (!phoneResult || !phoneResult.phoneInfo) {
-      return {
-        success: false,
-        message: '获取手机号失败'
-      }
-    }
-
-    const phoneNumber = phoneResult.phoneInfo.phoneNumber
-    const now = new Date()
-
-    // 查找用户
-    const result = await db.collection('users').where({
-      _openid: wxContext.OPENID
-    }).get()
-
-    if (result.data.length > 0) {
-      // 用户已存在，绑定手机号
-      const user = result.data[0]
-      await db.collection('users').doc(user._id).update({
-        data: {
-          phoneNumber: phoneNumber,
-          lastLoginTime: now,
-          updateTime: now
-        }
-      })
-
-      return {
-        success: true,
-        data: {
-          ...user,
-          phoneNumber: phoneNumber,
-          lastLoginTime: now
-        },
-        isNewUser: false
-      }
-    } else {
-      // 新用户，创建用户记录
-      const userRecord = {
-        _openid: wxContext.OPENID,
-        phoneNumber: phoneNumber,
-        createTime: now,
-        updateTime: now,
-        lastLoginTime: now
-      }
-
-      const createResult = await db.collection('users').add({
-        data: userRecord
-      })
-
-      return {
-        success: true,
-        data: {
-          _id: createResult._id,
-          _openid: wxContext.OPENID,
-          ...userRecord
-        },
-        isNewUser: true
-      }
-    }
-  } catch (error) {
-    console.error('手机号登录失败:', error)
-    return {
-      success: false,
-      message: error.message
-    }
-  }
-}
-
-// 绑定手机号
-async function bindPhone(userId, phoneNumber, wxContext) {
-  try {
-    const result = await db.collection('users').where({
-      _openid: wxContext.OPENID,
-      _id: userId
-    }).update({
-      data: {
-        phoneNumber: phoneNumber,
-        updateTime: new Date()
-      }
-    })
-
-    return {
-      success: true,
-      data: result
-    }
-  } catch (error) {
     return {
       success: false,
       message: error.message

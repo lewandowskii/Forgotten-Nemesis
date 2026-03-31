@@ -76,6 +76,81 @@ export interface AddMemoryPageData {
   maxDate: string;
 }
 
+export type QuickActionStatus =
+  | 'proposed'
+  | 'executing'
+  | 'completed'
+  | 'failed'
+  | 'dismissed';
+
+export interface CreateMemoryQuickActionPayload {
+  memoryType: MemoryType;
+  title: string;
+  targetDate: string;
+  dateType: 'solar' | 'lunar';
+  lunarDate?: {
+    year: number;
+    month: number;
+    day: number;
+    isLeap: boolean;
+  };
+  description?: string;
+  repeatYearly: boolean;
+  enableSpecialDays: boolean;
+  color: string;
+}
+
+export interface QuickAction {
+  id: string;
+  type: 'create_memory';
+  title: string;
+  description: string;
+  status: QuickActionStatus;
+  confidence: number;
+  payload: CreateMemoryQuickActionPayload;
+  memoryId?: string;
+  errorMessage?: string;
+}
+
+export interface QuickActionExecuteResult {
+  success: boolean;
+  actionId: string;
+  memoryId?: string;
+  errorMessage?: string;
+}
+
+export type NoteFilterType = 'all' | 'lastYear' | 'prevYear' | 'earlier';
+
+export type NoteSourceType = 'manual' | 'chat' | 'memory';
+
+export interface Note {
+  _id: string;
+  _openid?: string;
+  title: string;
+  content: string;
+  noteDate: string;
+  noteYear: number;
+  isDeleted: boolean;
+  source: NoteSourceType;
+  relatedMemoryIds: string[];
+  relatedConversationIds: string[];
+  linkMeta: Record<string, any>;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface CreateNotePayload {
+  title: string;
+  content: string;
+  noteDate: string;
+  source?: NoteSourceType;
+  relatedMemoryIds?: string[];
+  relatedConversationIds?: string[];
+  linkMeta?: Record<string, any>;
+}
+
+export interface UpdateNotePayload extends CreateNotePayload {}
+
 // 农历日期选择器模式
 export type DatePickerMode = 'solar' | 'lunar';
 

@@ -1,0 +1,45 @@
+<view class="note-edit-page">
+  <view class="editor-card">
+    <t-input
+      class="title-input"
+      value="{{title}}"
+      placeholder="输入标题（可选）"
+      maxlength="80"
+      borderless
+      bind:change="onTitleChange"
+    />
+    <view class="editor-divider"></view>
+    <view class="content-wrap">
+      <t-textarea
+        class="content-input"
+        value="{{content}}"
+        placeholder="今天发生了什么？"
+        maxlength="1000"
+        autosize="{{textareaAutosize}}"
+        disableDefaultPadding="{{true}}"
+        t-class-textarea="note-content-textarea"
+        borderless
+        bind:change="onContentChange"
+      />
+      <view class="content-fade"></view>
+    </view>
+  </view>
+
+  <view class="footer-panel">
+    <picker mode="date" value="{{noteDate}}" bindchange="onDateChange">
+      <view class="time-row">
+        <view class="time-row-left">
+          <t-icon name="time" size="36rpx" />
+          <text class="time-row-label">日记时间</text>
+        </view>
+        <text class="time-row-value">{{dateFull}}</text>
+      </view>
+    </picker>
+
+    <t-button theme="primary" size="large" block loading="{{loading}}" bind:tap="onSave">
+      保存笔记
+    </t-button>
+  </view>
+
+  <t-message id="t-message" />
+</view>

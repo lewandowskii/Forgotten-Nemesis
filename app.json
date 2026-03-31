@@ -1,5 +1,12 @@
 {
-  "pages": ["pages/login/login", "pages/home/index", "pages/add-memory/index", "pages/my/index", "pages/chat/index"],
+  "pages": [
+    "pages/home/index",
+    "pages/note/index",
+    "pages/chat/index",
+    "pages/note-edit/index",
+    "pages/add-memory/index",
+    "pages/my/index"
+  ],
   "lazyCodeLoading": "requiredComponents",
   "usingComponents": {
     "t-toast": "tdesign-miniprogram/toast/toast"
@@ -19,16 +26,12 @@
         "text": "首页"
       },
       {
-        "pagePath": "pages/add-memory/index",
-        "text": "添加"
+        "pagePath": "pages/note/index",
+        "text": "笔记"
       },
       {
         "pagePath": "pages/chat/index",
         "text": "对话"
-      },
-      {
-        "pagePath": "pages/my/index",
-        "text": "我的"
       }
     ]
   },

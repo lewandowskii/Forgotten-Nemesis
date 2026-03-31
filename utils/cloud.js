@@ -24,21 +24,6 @@ class CloudAPI {
     })
   }
 
-  static async phoneLogin(code) {
-    return await this.callFunction('user', {
-      action: 'phoneLogin',
-      code: code
-    })
-  }
-
-  static async bindPhone(userId, phoneNumber) {
-    return await this.callFunction('user', {
-      action: 'bindPhone',
-      userId,
-      phoneNumber
-    })
-  }
-
   static async getUserInfo() {
     return await this.callFunction('user', {
       action: 'getUserInfo'

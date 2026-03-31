@@ -1,7 +1,11 @@
 // components/agent-ui/index.js
 import { checkConfig, randomSelectInitquestion, getCloudInstance, commonRequest, sleep } from "./tools";
 import md5 from "./md5.js";
-import { MemoryStorage } from "../../utils/memory";
+import CloudMemorySync from "../../utils/cloud-memory";
+import { MemoryStorage, MEMORY_TYPE_COLORS } from "../../utils/memory";
+
+const QUICK_ACTION_BLOCK_REGEXP = /```quick_actions\s*([\s\S]*?)```/i;
+const QUICK_ACTION_CONFIDENCE_THRESHOLD = 0.8;
 
 Component({
   properties: {
@@ -107,7 +111,8 @@ Component({
     showVoice: true,
     useWebSearch: false,
     showFeatureList: false,
-    chatStatus: 0, // 页面状态： 0-正常状态，可输入，可发送， 1-发送中 2-思考中 3-输出content中
+    // 页面状态：0-正常（可输入可发送） 1-发送中（禁用输入） 2-思考中（禁用输入） 3-输出中（允许输入）
+    chatStatus: 0,
     triggered: false,
     page: 1,
     size: 10,
@@ -292,6 +297,313 @@ Component({
     }
   },
   methods: {
+    parseQuickActionsFromText(rawText = "") {
+      if (!rawText || typeof rawText !== "string") {
+        return {
+          content: rawText || "",
+          quickActions: [],
+          matched: false,
+        };
+      }
+
+      const match = rawText.match(QUICK_ACTION_BLOCK_REGEXP);
+      if (!match) {
+        return {
+          content: rawText,
+          quickActions: [],
+          matched: false,
+        };
+      }
+
+      let parsed;
+      try {
+        parsed = JSON.parse(match[1]);
+      } catch (error) {
+        console.warn("quick actions parse failed", error);
+        return {
+          content: rawText.replace(QUICK_ACTION_BLOCK_REGEXP, "").trim(),
+          quickActions: [],
+          matched: true,
+        };
+      }
+
+      const list = Array.isArray(parsed) ? parsed : parsed.quickActions;
+      const quickActions = Array.isArray(list)
+        ? list
+            .map((item, index) => this.normalizeQuickAction(item, index))
+            .filter(Boolean)
+        : [];
+
+      return {
+        content: rawText.replace(QUICK_ACTION_BLOCK_REGEXP, "").trim(),
+        quickActions,
+        matched: true,
+      };
+    },
+    getQuickActionStreamState(rawText = "") {
+      if (!rawText || typeof rawText !== "string") {
+        return {
+          hasStart: false,
+          isComplete: false,
+        };
+      }
+
+      const startMarker = "```quick_actions";
+      const startIndex = rawText.indexOf(startMarker);
+      if (startIndex === -1) {
+        return {
+          hasStart: false,
+          isComplete: false,
+        };
+      }
+
+      const endIndex = rawText.indexOf("```", startIndex + startMarker.length);
+      return {
+        hasStart: true,
+        isComplete: endIndex !== -1,
+      };
+    },
+    sanitizeQuickActionTextForDisplay(rawText = "") {
+      if (!rawText || typeof rawText !== "string") {
+        return rawText || "";
+      }
+
+      const startMarker = "```quick_actions";
+      const startIndex = rawText.indexOf(startMarker);
+      if (startIndex === -1) {
+        return rawText;
+      }
+
+      const endIndex = rawText.indexOf("```", startIndex + startMarker.length);
+      if (endIndex === -1) {
+        return rawText.slice(0, startIndex).trimEnd();
+      }
+
+      return (rawText.slice(0, startIndex) + rawText.slice(endIndex + 3)).trim();
+    },
+    normalizeQuickAction(action, index = 0) {
+      if (!action || action.type !== "create_memory" || !action.payload) {
+        return null;
+      }
+
+      const payload = this.normalizeCreateMemoryPayload(action.payload);
+      const confidence = Number(action.confidence ?? 0);
+      const status = action.status || "proposed";
+
+      if (!payload || confidence < QUICK_ACTION_CONFIDENCE_THRESHOLD || status !== "proposed") {
+        return null;
+      }
+
+      return {
+        id: action.id || `quick_action_${Date.now()}_${index}`,
+        type: "create_memory",
+        title: action.title || "创建纪念日",
+        description: action.description || "我帮你识别出一条可以直接创建的纪念日。",
+        status: "proposed",
+        confidence,
+        payload,
+        memoryId: "",
+        errorMessage: "",
+      };
+    },
+    normalizeCreateMemoryPayload(payload = {}) {
+      const memoryType = payload.memoryType;
+      const title = (payload.title || "").trim();
+      const targetDate = payload.targetDate;
+      const dateType = payload.dateType === "lunar" ? "lunar" : "solar";
+
+      if (!memoryType || !title || !targetDate || !MEMORY_TYPE_COLORS[memoryType]) {
+        return null;
+      }
+
+      const normalizedPayload = {
+        memoryType,
+        title,
+        targetDate,
+        dateType,
+        description: (payload.description || "").trim(),
+        repeatYearly:
+          payload.repeatYearly === undefined ? ["birthday", "anniversary", "holiday"].includes(memoryType) : !!payload.repeatYearly,
+        enableSpecialDays: memoryType === "anniversary" ? !!payload.enableSpecialDays : false,
+        color: payload.color || MEMORY_TYPE_COLORS[memoryType],
+      };
+
+      if (dateType === "lunar" && payload.lunarDate) {
+        normalizedPayload.lunarDate = {
+          year: Number(payload.lunarDate.year),
+          month: Number(payload.lunarDate.month),
+          day: Number(payload.lunarDate.day),
+          isLeap: !!payload.lunarDate.isLeap,
+        };
+      }
+
+      return normalizedPayload;
+    },
+    applyQuickActionsToChatRecord(recordIndex, rawText) {
+      const record = this.data.chatRecords[recordIndex];
+      if (!record || record.role !== "assistant") {
+        return;
+      }
+      const sourceText = rawText === undefined ? record.content || "" : rawText;
+      const { content, quickActions, matched } = this.parseQuickActionsFromText(sourceText);
+      if (!matched) {
+        return;
+      }
+      this.setData({
+        [`chatRecords[${recordIndex}].content`]: content,
+        [`chatRecords[${recordIndex}].quickActions`]: quickActions,
+        [`chatRecords[${recordIndex}].pendingQuickActionFlow`]: false,
+      });
+    },
+    updateQuickActionPendingStateForChatRecord(recordIndex, rawText) {
+      const record = this.data.chatRecords[recordIndex];
+      if (!record || record.role !== "assistant") {
+        return;
+      }
+      const state = this.getQuickActionStreamState(rawText || "");
+      if (!state.hasStart) {
+        return;
+      }
+      this.setData({
+        [`chatRecords[${recordIndex}].pendingQuickActionFlow`]: true,
+      });
+    },
+    applyQuickActionsToAgentMessage(messageIndex) {
+      const message = this.data.messages[messageIndex];
+      if (!message || message.role !== "assistant") {
+        return;
+      }
+
+      const textIndexes = [];
+      let combinedText = "";
+      (message.parts || []).forEach((part, index) => {
+        if (part.type === "text") {
+          textIndexes.push(index);
+          combinedText += part.rawContent || part.content || "";
+        }
+      });
+
+      const { content, quickActions, matched } = this.parseQuickActionsFromText(combinedText);
+      if (!matched) {
+        return;
+      }
+      const textParts = textIndexes.length ? textIndexes : [];
+
+      if (textParts.length > 0) {
+        this.setData({
+          [`messages[${messageIndex}].parts[${textParts[0]}].content`]: content,
+          [`messages[${messageIndex}].quickActions`]: quickActions,
+          [`messages[${messageIndex}].pendingQuickActionFlow`]: false,
+        });
+        for (let i = 1; i < textParts.length; i++) {
+          this.setData({
+            [`messages[${messageIndex}].parts[${textParts[i]}].content`]: "",
+          });
+        }
+        return;
+      }
+
+      this.setData({
+        [`messages[${messageIndex}].quickActions`]: quickActions,
+        [`messages[${messageIndex}].pendingQuickActionFlow`]: false,
+      });
+    },
+    updateQuickActionPendingStateForAgentMessage(messageIndex) {
+      const message = this.data.messages[messageIndex];
+      if (!message || message.role !== "assistant") {
+        return;
+      }
+
+      const textIndexes = [];
+      let combinedText = "";
+      (message.parts || []).forEach((part, index) => {
+        if (part.type === "text") {
+          textIndexes.push(index);
+          combinedText += part.rawContent || part.content || "";
+        }
+      });
+
+      const state = this.getQuickActionStreamState(combinedText);
+      if (!state.hasStart || textIndexes.length === 0) {
+        return;
+      }
+
+      this.setData({
+        [`messages[${messageIndex}].pendingQuickActionFlow`]: true,
+      });
+    },
+    async executeCreateMemoryAction(action) {
+      const payload = this.normalizeCreateMemoryPayload(action.payload);
+      if (!payload) {
+        return {
+          success: false,
+          errorMessage: "纪念日信息不完整，暂时无法创建。",
+        };
+      }
+
+      const result = MemoryStorage.saveMemory({
+        title: payload.title,
+        targetDate: payload.targetDate,
+        dateType: payload.dateType,
+        lunarDate: payload.dateType === "lunar" ? payload.lunarDate : undefined,
+        type: payload.memoryType,
+        color: payload.color,
+        description: payload.description || "",
+        repeatYearly: payload.repeatYearly,
+        enableSpecialDays: payload.memoryType === "anniversary" ? payload.enableSpecialDays : false,
+      });
+
+      if (!result) {
+        return {
+          success: false,
+          errorMessage: "创建失败，请稍后再试。",
+        };
+      }
+
+      CloudMemorySync.autoSync();
+      return {
+        success: true,
+        memoryId: result.id,
+      };
+    },
+    async handleExecuteQuickAction(e) {
+      const { messageType, messageIndex, actionIndex } = e.currentTarget.dataset;
+      const list = this.data[messageType] || [];
+      const message = list[messageIndex];
+      const action = message?.quickActions?.[actionIndex];
+
+      if (!action || !["proposed", "failed"].includes(action.status)) {
+        return;
+      }
+
+      this.setData({
+        [`${messageType}[${messageIndex}].quickActions[${actionIndex}].status`]: "executing",
+        [`${messageType}[${messageIndex}].quickActions[${actionIndex}].errorMessage`]: "",
+      });
+
+      const result = await this.executeCreateMemoryAction(action);
+      if (result.success) {
+        this.setData({
+          [`${messageType}[${messageIndex}].quickActions[${actionIndex}].status`]: "completed",
+          [`${messageType}[${messageIndex}].quickActions[${actionIndex}].memoryId`]: result.memoryId,
+        });
+        wx.showToast({
+          title: "纪念日已创建",
+          icon: "success",
+        });
+        return;
+      }
+
+      this.setData({
+        [`${messageType}[${messageIndex}].quickActions[${actionIndex}].status`]: "failed",
+        [`${messageType}[${messageIndex}].quickActions[${actionIndex}].errorMessage`]:
+          result.errorMessage || "创建失败，请稍后重试。",
+      });
+      wx.showToast({
+        title: "创建失败",
+        icon: "error",
+      });
+    },
     initRecordManager: async function () {
       const cloudInstance = await getCloudInstance();
       const recorderManager = wx.getRecorderManager();
@@ -394,6 +706,13 @@ Component({
       });
     },
     handleChangeInputType(e) {
+      if (this.data.chatStatus === 1 || this.data.chatStatus === 2) {
+        wx.showToast({
+          title: "小助手正在思考中",
+          icon: "none",
+        });
+        return;
+      }
       // 检查当前语音能力权限
       if (!this.data.bot.voiceSettings?.enable) {
         wx.showModal({
@@ -1326,6 +1645,13 @@ Component({
       });
     },
     handleUploadMessageFile: function () {
+      if (this.data.chatStatus === 1 || this.data.chatStatus === 2) {
+        wx.showToast({
+          title: "小助手正在思考中",
+          icon: "none",
+        });
+        return;
+      }
       // 判断agent 配置是否打开上传文件
       if (!this.data.bot.searchFileEnable) {
         wx.showModal({
@@ -1364,9 +1690,23 @@ Component({
       }
     },
     handleAlbum: function () {
+      if (this.data.chatStatus === 1 || this.data.chatStatus === 2) {
+        wx.showToast({
+          title: "小助手正在思考中",
+          icon: "none",
+        });
+        return;
+      }
       this.handleUploadImg("album");
     },
     handleCamera: function () {
+      if (this.data.chatStatus === 1 || this.data.chatStatus === 2) {
+        wx.showToast({
+          title: "小助手正在思考中",
+          icon: "none",
+        });
+        return;
+      }
       this.handleUploadImg("camera");
     },
     checkFileExt: function (ext) {
@@ -1417,9 +1757,26 @@ Component({
         await this.sendMessage(event.currentTarget.dataset.message);
       }
     },
+    normalizeUserName: function (rawName) {
+      const name = (rawName || "").trim();
+      if (!name) return "";
+      const placeholders = ["用户", "微信用户", "weixin user", "wechat user", "游客"];
+      const normalized = name.toLowerCase();
+      if (placeholders.includes(normalized)) {
+        return "";
+      }
+      return name;
+    },
+    formatDateYMD: function (date = new Date()) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    },
     getUserContext: function () {
-      const userInfo = wx.getStorageSync('userInfo') || {};
-      const userName = userInfo.nickName || "用户";
+      const app = getApp();
+      const userInfo = wx.getStorageSync("userInfo") || app.globalData?.userInfo || {};
+      const userName = this.normalizeUserName(userInfo.nickName);
       
       const memories = MemoryStorage.getMemories();
       const today = new Date();
@@ -1462,8 +1819,8 @@ Component({
       return {
         type: "context_init",
         data: {
-          userName: userName,
-          currentDate: today.toLocaleDateString(),
+          ...(userName ? { userName } : {}),
+          currentDate: this.formatDateYMD(today),
           anniversaries: anniversaries
         }
       };
@@ -1727,12 +2084,13 @@ Component({
 
               if (!isToolCallContent) {
                 contentText += content;
-                lastValue.content = contentText;
+                lastValue.content = this.sanitizeQuickActionTextForDisplay(contentText);
                 this.setData({
                   [`chatRecords[${lastValueIndex}].content`]: lastValue.content,
                   [`chatRecords[${lastValueIndex}].record_id`]: lastValue.record_id,
                   chatStatus: 3,
                 }); // 聊天状态切换为输出content中
+                this.updateQuickActionPendingStateForChatRecord(lastValueIndex, contentText);
               }
             }
             // 知识库，只更新一次
@@ -1821,6 +2179,9 @@ Component({
           chatStatus: 0,
           [`chatRecords[${lastValueIndex}].hiddenBtnGround`]: isManuallyPaused,
         }); // 对话完成，切回0 ,并且修改最后一条消息的状态，让下面的按钮展示
+        if (!isManuallyPaused) {
+          this.applyQuickActionsToChatRecord(lastValueIndex, contentText);
+        }
         if (bot.isNeedRecommend && !isManuallyPaused) {
           const cloudInstance = await getCloudInstance(this.data.envShareConfig);
           const ai = cloudInstance.extend.AI;
@@ -2032,6 +2393,13 @@ Component({
       });
     },
     handleClickTools: function () {
+      if (this.data.chatStatus === 1 || this.data.chatStatus === 2) {
+        wx.showToast({
+          title: "小助手正在思考中",
+          icon: "none",
+        });
+        return;
+      }
       this.setData({
         showTools: !this.data.showTools,
       });
@@ -2416,7 +2784,7 @@ Component({
       // 1. UI 预处理,如果是用户消息,则添加一个 AI 占位消息
       const newMessages = [...messages];
       if (message?.[0]?.role === "user") {
-        const aiMsg = { id: "assistant_message_" + Date.now(), role: "assistant", parts: [] };
+        const aiMsg = { id: "assistant_message_" + Date.now(), role: "assistant", parts: [], pendingQuickActionFlow: false };
         newMessages.push(message?.[0], aiMsg);
         this.setData({
           messages: newMessages,
@@ -2467,10 +2835,11 @@ Component({
           // 普通文本输出开始，push 一个 text 类型的 part
           case "TEXT_MESSAGE_START":
             fullContent = "";
-            const textPart = { type: "text", content: fullContent, id: data.messageId };
+            const textPart = { type: "text", content: fullContent, rawContent: fullContent, id: data.messageId };
             currentParts.push(textPart);
             this.setData({
               [`messages[${currentAiMsgIndex}].parts`]: currentParts,
+              chatStatus: 3,
             });
             break;
 
@@ -2478,8 +2847,12 @@ Component({
           case "TEXT_MESSAGE_CONTENT":
             fullContent += data.delta || "";
             this.setData({
-              [`messages[${currentAiMsgIndex}].parts[${currentParts.length - 1}].content`]: fullContent,
+              [`messages[${currentAiMsgIndex}].parts[${currentParts.length - 1}].rawContent`]: fullContent,
+              [`messages[${currentAiMsgIndex}].parts[${currentParts.length - 1}].content`]:
+                this.sanitizeQuickActionTextForDisplay(fullContent),
+              chatStatus: 3,
             });
+            this.updateQuickActionPendingStateForAgentMessage(currentAiMsgIndex);
             break;
           // 工具调用开始，push 一个 tool_call 类型的 part
           case "TOOL_CALL_START":
@@ -2592,7 +2965,9 @@ Component({
         const toolCallMessages = this.handleFrontendToolCallMessage(frontendToolsResult);
         // 递归调用 sendMessageV2，直至本轮会话结束
         await this.sendMessageV2(toolCallMessages);
+        return;
       }
+      this.applyQuickActionsToAgentMessage(currentAiMsgIndex);
     },
   },
 });

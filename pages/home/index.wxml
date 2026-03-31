@@ -53,11 +53,20 @@
     >
       <scroll-view class="memory-scroll" scroll-y="true">
         <view class="memory-list">
-        <view class="memory-empty" wx:if="{{memories.length === 0}}">
-          <text class="empty-text">暂无纪念日</text>
-          <text class="empty-desc">点击下方按钮添加第一个纪念日吧</text>
+        <view class="memory-empty memory-empty-compact" wx:if="{{memories.length === 0}}">
+          <view class="empty-skeleton-list empty-skeleton-list-compact">
+            <view class="empty-skeleton-item" wx:for="{{[1]}}" wx:key="item">
+              <view class="empty-skeleton-icon"></view>
+              <view class="empty-skeleton-content">
+                <view class="empty-skeleton-line empty-skeleton-line-title"></view>
+                <view class="empty-skeleton-line empty-skeleton-line-sub"></view>
+              </view>
+            </view>
+          </view>
+          <text class="empty-text">还没有纪念日</text>
+          <text class="empty-desc">你可以新建一条，也可以直接在对话里说“帮我记一下妈妈生日是5月20号”</text>
           <t-button theme="primary" size="medium" icon="add" shape="round" bind:tap="goAddMemory" class="empty-add-btn">
-            立即添加
+            创建第一个纪念日
           </t-button>
         </view>
 
@@ -109,10 +118,19 @@
       <scroll-view class="upcoming-scroll" scroll-y="true">
         <view class="upcoming-list">
           <view class="upcoming-empty" wx:if="{{upcomingMemories.length === 0}}">
-            <text class="empty-icon">📅</text>
-            <text class="empty-text">暂无即将到来的纪念日</text>
+            <view class="empty-skeleton-list">
+              <view class="empty-skeleton-item" wx:for="{{[1,2,3]}}" wx:key="item">
+                <view class="empty-skeleton-icon"></view>
+                <view class="empty-skeleton-content">
+                  <view class="empty-skeleton-line empty-skeleton-line-title"></view>
+                  <view class="empty-skeleton-line empty-skeleton-line-sub"></view>
+                </view>
+              </view>
+            </view>
+            <text class="empty-text">还没有即将到来的纪念日</text>
+            <text class="empty-desc">先创建第一条纪念日，之后这里会自动帮你整理最近要到来的重要日子</text>
             <t-button theme="primary" size="medium" icon="add" shape="round" bind:tap="goAddMemory" class="empty-add-btn">
-              添加纪念日
+              创建第一个纪念日
             </t-button>
           </view>
 

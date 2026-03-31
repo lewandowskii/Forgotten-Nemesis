@@ -1,0 +1,49 @@
+<view class="note-page">
+  <view class="filter-row">
+    <view
+      wx:for="{{filters}}"
+      wx:key="value"
+      class="filter-pill {{filterType === item.value ? 'active' : ''}}"
+      bind:tap="onFilterTap"
+      data-value="{{item.value}}"
+    >
+      <text>{{item.label}}</text>
+    </view>
+  </view>
+
+  <view class="timeline-wrapper" wx:if="{{groupedNotes.length}}">
+    <view class="timeline-axis"></view>
+    <view wx:for="{{groupedNotes}}" wx:key="dateKey" class="date-group">
+      <view class="date-head">
+        <view class="axis-dot"></view>
+        <text class="date-title">{{item.dateLabel}}</text>
+      </view>
+
+      <view class="note-list">
+        <view wx:for="{{item.list}}" wx:key="_id" class="note-card">
+          <view class="note-main" bind:tap="goEditNote" data-id="{{item._id}}">
+            <view class="note-title">{{item.title || '无标题笔记'}}</view>
+            <view class="note-content">{{item.content || '暂无内容'}}</view>
+            <view class="note-date">{{item.noteDate}}</view>
+          </view>
+          <view class="card-action" bind:tap="onNoteAction" data-id="{{item._id}}">
+            <t-icon name="more" size="38rpx" color="#6b7b9a" />
+          </view>
+        </view>
+      </view>
+    </view>
+
+    <view class="timeline-end" wx:if="{{!hasMore && !loading}}">没有更多日记了</view>
+    <view class="timeline-end" wx:if="{{loading}}">加载中...</view>
+  </view>
+
+  <view class="empty-block" wx:else>
+    <text class="empty-title">还没有笔记</text>
+    <text class="empty-desc">写下第一条内容，后续可和纪念日、对话能力联动</text>
+    <t-button theme="primary" shape="round" icon="add" bind:tap="goCreateNote">新建笔记</t-button>
+  </view>
+
+  <view class="note-fab" bind:tap="goCreateNote">
+    <text class="fab-icon">+</text>
+  </view>
+</view>

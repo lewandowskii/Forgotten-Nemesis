@@ -6,6 +6,7 @@
     "chatFile": "./chatFile/index",
     "feedback": "./feedback/index",
     "customCard": "./customCard/index",
-    "tool": "./tool/index"
+    "tool": "./tool/index",
+    "quick-action-card": "./quick-action-card/index"
   }
 }

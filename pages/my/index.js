@@ -125,11 +125,39 @@ Page({
     }
   },
 
-  // 跳转登录页
-  onLogin(e) {
-    wx.navigateTo({
-      url: '/pages/login/login',
-    });
+  // 直接发起微信登录，不再经过登录页面
+  async onLogin() {
+    wx.showLoading({ title: '登录中...' });
+    try {
+      const result = await AuthAPI.wxLogin();
+      if (!result.success) {
+        wx.showToast({
+          title: result.message || '登录失败',
+          icon: 'none',
+        });
+        return;
+      }
+
+      const app = getApp();
+      app.setLoginStatus(result.userInfo, `wx_token_${Date.now()}`);
+      this.setData({
+        isLoad: true,
+        userInfo: result.userInfo,
+      });
+      await this.loadUserStats();
+      wx.showToast({
+        title: result.isNewUser ? '注册成功' : '登录成功',
+        icon: 'success',
+      });
+    } catch (error) {
+      console.error('登录失败:', error);
+      wx.showToast({
+        title: '登录失败，请重试',
+        icon: 'none',
+      });
+    } finally {
+      wx.hideLoading();
+    }
   },
 
   // 跳转个人资料编辑页

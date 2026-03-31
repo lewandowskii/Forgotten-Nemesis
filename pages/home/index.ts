@@ -298,7 +298,7 @@ Page({
   },
 
   goAddMemory() {
-    wx.switchTab({
+    wx.navigateTo({
       url: '/pages/add-memory/index'
     });
   },
@@ -308,7 +308,7 @@ Page({
     const memory = this.data.memories.find((item: any) => item.id == id); // 使用宽松相等
     if (memory) {
       wx.setStorageSync('editMemory', memory);
-      wx.switchTab({
+      wx.navigateTo({
         url: '/pages/add-memory/index'
       });
     } else {
