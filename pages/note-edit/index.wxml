@@ -1,44 +1,83 @@
 <view class="note-edit-page">
   <view class="editor-card">
-    <t-input
-      class="title-input"
-      value="{{title}}"
-      placeholder="输入标题（可选）"
-      maxlength="80"
-      borderless
-      bind:change="onTitleChange"
-    />
-    <view class="editor-divider"></view>
-    <view class="content-wrap">
-      <t-textarea
-        class="content-input"
-        value="{{content}}"
-        placeholder="今天发生了什么？"
-        maxlength="1000"
-        autosize="{{textareaAutosize}}"
-        disableDefaultPadding="{{true}}"
-        t-class-textarea="note-content-textarea"
+    <block wx:if="{{detailLoading}}">
+      <view class="skeleton-line skeleton-line--title"></view>
+      <view class="editor-divider"></view>
+      <view class="skeleton-paragraph">
+        <view class="skeleton-line skeleton-line--content"></view>
+        <view class="skeleton-line skeleton-line--content"></view>
+        <view class="skeleton-line skeleton-line--content skeleton-line--content-short"></view>
+      </view>
+    </block>
+
+    <block wx:else>
+      <t-input
+        class="title-input"
+        value="{{title}}"
+        placeholder="输入标题（可选）"
+        maxlength="80"
         borderless
-        bind:change="onContentChange"
+        bind:change="onTitleChange"
       />
-      <view class="content-fade"></view>
-    </view>
+      <view class="editor-divider"></view>
+      <view class="toolbar-row">
+        <view class="mode-switch">
+          <view class="mode-chip {{mode === 'edit' ? 'active' : ''}}" bind:tap="onModeChange" data-mode="edit">编辑</view>
+          <view class="mode-chip {{mode === 'preview' ? 'active' : ''}}" bind:tap="onModeChange" data-mode="preview">预览</view>
+        </view>
+        <view wx:if="{{mode === 'edit'}}" class="markdown-hint">支持 Markdown</view>
+      </view>
+      <view class="content-wrap">
+        <block wx:if="{{mode === 'edit'}}">
+          <t-textarea
+            class="content-input"
+            value="{{content}}"
+            placeholder="写点什么..."
+            maxlength="1000"
+            autosize="{{textareaAutosize}}"
+            disableDefaultPadding="{{true}}"
+            t-class-textarea="note-content-textarea"
+            borderless
+            bind:change="onContentChange"
+          />
+          <view class="content-fade"></view>
+        </block>
+        <block wx:else>
+          <scroll-view scroll-y class="preview-scroll">
+            <rich-text class="preview-richtext" nodes="{{previewContent}}"></rich-text>
+          </scroll-view>
+        </block>
+      </view>
+    </block>
   </view>
 
   <view class="footer-panel">
-    <picker mode="date" value="{{noteDate}}" bindchange="onDateChange">
-      <view class="time-row">
+    <block wx:if="{{detailLoading}}">
+      <view class="time-row time-row--skeleton">
         <view class="time-row-left">
-          <t-icon name="time" size="36rpx" />
-          <text class="time-row-label">日记时间</text>
+          <view class="skeleton-dot"></view>
+          <view class="skeleton-line skeleton-line--time-label"></view>
         </view>
-        <text class="time-row-value">{{dateFull}}</text>
+        <view class="skeleton-line skeleton-line--time-value"></view>
       </view>
-    </picker>
+      <view class="save-skeleton"></view>
+    </block>
 
-    <t-button theme="primary" size="large" block loading="{{loading}}" bind:tap="onSave">
-      保存笔记
-    </t-button>
+    <block wx:else>
+      <picker mode="date" value="{{noteDate}}" bindchange="onDateChange">
+        <view class="time-row">
+          <view class="time-row-left">
+            <t-icon name="time" size="36rpx" />
+            <text class="time-row-label">日记时间</text>
+          </view>
+          <text class="time-row-value">{{dateFull}}</text>
+        </view>
+      </picker>
+
+      <t-button theme="primary" size="large" block loading="{{saving}}" disabled="{{saving}}" bind:tap="onSave">
+        保存笔记
+      </t-button>
+    </block>
   </view>
 
   <t-message id="t-message" />

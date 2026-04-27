@@ -1,5 +1,6 @@
 const Message = require('tdesign-miniprogram/message/index');
 const NoteAPI = require('../../utils/note');
+const { buildMarkdownPreview } = require('../../utils/markdown');
 
 function formatDateToYMD(date = new Date()) {
   const year = date.getFullYear();
@@ -40,12 +41,16 @@ Page({
       minHeight: 220,
       maxHeight: 520,
     },
-    loading: false,
+    mode: 'edit',
+    previewContent: '',
+    detailLoading: false,
+    saving: false,
   },
 
   onLoad(options) {
     const today = formatDateToYMD();
     this.setNoteDate(today);
+    this.updatePreviewContent('');
     if (options.id) {
       this.setData({ noteId: options.id });
       this.fetchDetail(options.id);
@@ -53,30 +58,47 @@ Page({
   },
 
   async fetchDetail(id) {
-    this.setData({ loading: true });
-    const res = await NoteAPI.getNoteDetail(id);
-    this.setData({ loading: false });
-    if (!res.success || !res.data) {
+    this.setData({ detailLoading: true });
+    let res;
+    try {
+      res = await NoteAPI.getNoteDetail(id);
+    } catch (error) {
+      console.error('获取笔记详情失败:', error);
+    } finally {
+      this.setData({ detailLoading: false });
+    }
+    if (!res || !res.success || !res.data) {
       wx.showToast({
-        title: res.message || '加载失败',
+        title: (res && res.message) || '加载失败',
         icon: 'none',
       });
       return;
     }
     const { title = '', content = '', noteDate = formatDateToYMD() } = res.data;
     this.setData({ title, content });
+    this.updatePreviewContent(content);
     this.setNoteDate(noteDate);
   },
 
   onTitleChange(e) {
+    if (this.data.detailLoading) return;
     this.setData({ title: e.detail.value || '' });
   },
 
   onContentChange(e) {
-    this.setData({ content: e.detail.value || '' });
+    if (this.data.detailLoading) return;
+    const content = e.detail.value || '';
+    this.setData({
+      content,
+      previewContent: buildMarkdownPreview(content, {
+        maxBlocks: 24,
+        maxCodeLines: 80,
+      }),
+    });
   },
 
   onDateChange(e) {
+    if (this.data.detailLoading) return;
     this.setNoteDate(e.detail.value);
   },
 
@@ -89,12 +111,29 @@ Page({
     });
   },
 
+  onModeChange(e) {
+    const { mode } = e.currentTarget.dataset;
+    if (!mode || mode === this.data.mode) return;
+    this.setData({ mode });
+  },
+
+  updatePreviewContent(content = '') {
+    this.setData({
+      previewContent: buildMarkdownPreview(content, {
+        maxBlocks: 24,
+        maxCodeLines: 80,
+      }),
+    });
+  },
+
   onCancel() {
     wx.navigateBack();
   },
 
   async onSave() {
-    const { noteId, title, content, noteDate } = this.data;
+    const { noteId, title, content, noteDate, detailLoading, saving } = this.data;
+    if (detailLoading || saving) return;
+
     const trimTitle = (title || '').trim();
     const trimContent = (content || '').trim();
     if (!trimTitle && !trimContent) {
@@ -126,13 +165,19 @@ Page({
       linkMeta: {},
     };
 
-    this.setData({ loading: true });
-    const res = noteId ? await NoteAPI.updateNote(noteId, payload) : await NoteAPI.createNote(payload);
-    this.setData({ loading: false });
+    this.setData({ saving: true });
+    let res;
+    try {
+      res = noteId ? await NoteAPI.updateNote(noteId, payload) : await NoteAPI.createNote(payload);
+    } catch (error) {
+      console.error('保存笔记失败:', error);
+    } finally {
+      this.setData({ saving: false });
+    }
 
-    if (!res.success) {
+    if (!res || !res.success) {
       wx.showToast({
-        title: res.message || '保存失败',
+        title: (res && res.message) || '保存失败',
         icon: 'none',
       });
       return;

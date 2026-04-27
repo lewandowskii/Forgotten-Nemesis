@@ -23,8 +23,51 @@
   margin-bottom: 18rpx;
 }
 
+.markdown-hint {
+  font-size: 24rpx;
+  color: #8a94b2;
+  line-height: 1.6;
+  flex-shrink: 0;
+}
+
+.toolbar-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+  margin-bottom: 16rpx;
+}
+
+.mode-switch {
+  display: inline-flex;
+  align-items: center;
+  padding: 6rpx;
+  border-radius: 999rpx;
+  background: #f3f6fd;
+}
+
+.mode-chip {
+  min-width: 108rpx;
+  height: 56rpx;
+  padding: 0 24rpx;
+  border-radius: 999rpx;
+  font-size: 26rpx;
+  color: #7d87a2;
+  line-height: 56rpx;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.mode-chip.active {
+  background: #ffffff;
+  color: #2f4cc9;
+  font-weight: 600;
+  box-shadow: 0 6rpx 14rpx rgba(47, 76, 201, 0.12);
+}
+
 .content-wrap {
   position: relative;
+  min-height: 220rpx;
 }
 
 .content-input {
@@ -52,6 +95,60 @@
   background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, #ffffff 86%);
 }
 
+.preview-scroll {
+  max-height: 520rpx;
+}
+
+.preview-richtext {
+  display: block;
+  min-height: 220rpx;
+}
+
+.skeleton-line,
+.skeleton-dot,
+.save-skeleton {
+  position: relative;
+  overflow: hidden;
+  background: #eef2fb;
+}
+
+.skeleton-line::after,
+.skeleton-dot::after,
+.save-skeleton::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -180rpx;
+  width: 180rpx;
+  height: 100%;
+  background: linear-gradient(90deg, rgba(238, 242, 251, 0) 0%, rgba(255, 255, 255, 0.92) 52%, rgba(238, 242, 251, 0) 100%);
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+.skeleton-line {
+  border-radius: 14rpx;
+}
+
+.skeleton-line--title {
+  width: 48%;
+  height: 42rpx;
+  margin-bottom: 10rpx;
+}
+
+.skeleton-paragraph {
+  padding-top: 4rpx;
+}
+
+.skeleton-line--content {
+  width: 100%;
+  height: 30rpx;
+  margin-bottom: 22rpx;
+}
+
+.skeleton-line--content-short {
+  width: 70%;
+}
+
 .footer-panel {
   position: fixed;
   left: 24rpx;
@@ -75,10 +172,30 @@
   margin-bottom: 16rpx;
 }
 
+.time-row--skeleton {
+  background: #f4f6fd;
+}
+
 .time-row-left {
   display: flex;
   align-items: center;
   gap: 10rpx;
+}
+
+.skeleton-dot {
+  width: 36rpx;
+  height: 36rpx;
+  border-radius: 50%;
+}
+
+.skeleton-line--time-label {
+  width: 128rpx;
+  height: 28rpx;
+}
+
+.skeleton-line--time-value {
+  width: 260rpx;
+  height: 28rpx;
 }
 
 .time-row-label {
@@ -90,4 +207,19 @@
 .time-row-value {
   font-size: 26rpx;
   color: #667085;
+}
+
+.save-skeleton {
+  height: 88rpx;
+  border-radius: 44rpx;
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    transform: translateX(0);
+  }
+
+  100% {
+    transform: translateX(720rpx);
+  }
 }

@@ -31,7 +31,7 @@
         <view wx:for="{{item.list}}" wx:key="_id" class="note-card">
           <view class="note-main" bind:tap="goEditNote" data-id="{{item._id}}">
             <view class="note-title">{{item.title || '无标题笔记'}}</view>
-            <view class="note-content">{{item.content || '暂无内容'}}</view>
+            <view class="note-content">{{item.contentPreview}}</view>
             <view class="note-date">{{item.noteDate}}</view>
           </view>
           <view class="card-action" bind:tap="onNoteAction" data-id="{{item._id}}">

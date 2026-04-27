@@ -1,4 +1,5 @@
 const NoteAPI = require('../../utils/note');
+const { extractMarkdownExcerpt } = require('../../utils/markdown');
 
 function formatDateToYMD(date = new Date()) {
   const year = date.getFullYear();
@@ -105,7 +106,10 @@ Page({
           list: [],
         };
       }
-      groupMap[key].list.push(item);
+      groupMap[key].list.push({
+        ...item,
+        contentPreview: extractMarkdownExcerpt(item.content, 56),
+      });
     });
 
     return Object.keys(groupMap)
